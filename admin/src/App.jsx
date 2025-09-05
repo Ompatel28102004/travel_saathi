@@ -5,6 +5,7 @@ import UsersPage from "./pages/UsersPage"; // Example: Manage Users
 import AlertsPage from "./pages/AlertsPage"; // Example: Safety Alerts
 import ReportsPage from "./pages/ReportsPage"; // Example: Reports
 import SettingsPage from "./pages/SettingsPage"; // Example: Settings
+import MapPage from "./pages/MapPage"; // Example: Map Integration
 import NotFound from "./pages/NotFound";   // 404 Page
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
 
         {/* Admin Dashboard + Sub Pages */}
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/map" element={<MapPage />} />
         <Route path="/users" element={<UsersPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/reports" element={<ReportsPage />} />
