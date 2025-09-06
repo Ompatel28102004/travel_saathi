@@ -31,5 +31,8 @@ app.use("/api/geofence", geoFenceRoutes);
 app.use("/api/admin",adminRoutes);
 app.use("/api/alert",sosRoutes);
 const PORT = process.env.PORT || 5000;
+const HOST = "0.0.0.0";  // 👈 Important
 const server = http.createServer(app);
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+server.listen(PORT, HOST, () =>
+  console.log(`🚀 Server running at http://${HOST}:${PORT}`)
+);

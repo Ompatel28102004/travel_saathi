@@ -351,7 +351,7 @@ class _TravelSaathiDashboardState extends State<TravelSaathiDashboard> {
               Navigator.pushNamed(
                 context,
                 '/sos',
-                arguments: {'userId': '68bc3b13f842c2c656f920bb'}, // ✅ Hardcoded for now
+                arguments: {'userId': '68bc38b0ffa06a704fa9b1ba'}, // ✅ Hardcoded for now
               );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(

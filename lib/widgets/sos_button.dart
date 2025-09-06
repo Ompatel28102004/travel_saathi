@@ -16,42 +16,81 @@ class _SOSButtonState extends State<SOSButton> {
   int _tapCount = 0;
   bool _sending = false;
 
-  Future<Position> _getCurrentLocation() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) throw Exception("Location services are disabled.");
+  /// Debug log prefix for filtering in Logcat
+  final String logTag = "[TRAVEL_SAATHI_SOS]";
 
+  Future<Position> _getCurrentLocation() async {
+    debugPrint("$logTag Checking location service status...");
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      debugPrint("$logTag ERROR: Location services are disabled!");
+      throw Exception("Location services are disabled.");
+    }
+
+    debugPrint("$logTag Checking location permissions...");
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
+      debugPrint("$logTag Requesting location permissions...");
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
+        debugPrint("$logTag ERROR: Location permission denied by user!");
         throw Exception("Location permission denied");
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
+      debugPrint("$logTag ERROR: Location permissions permanently denied.");
       throw Exception("Location permissions are permanently denied.");
     }
 
-    return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    debugPrint("$logTag Fetching current GPS location...");
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    debugPrint(
+      "$logTag Current Location: LAT=${position.latitude}, LNG=${position.longitude}",
+    );
+
+    return position;
   }
 
   Future<void> _sendSOS() async {
     try {
       setState(() => _sending = true);
 
+      debugPrint("$logTag === STARTING SOS REQUEST ===");
+      debugPrint("$logTag User ID: ${widget.userId}");
+
       final position = await _getCurrentLocation();
 
+      final url = "http://10.0.2.2:5000/api/alert/create";
+      final payload = {
+        "userId": widget.userId,
+        "location": {
+          "lat": position.latitude,
+          "lng": position.longitude,
+        },
+      };
+
+      debugPrint("$logTag Sending POST request to: $url");
+      debugPrint("$logTag Request Body: ${jsonEncode(payload)}");
+
       final response = await http.post(
-        Uri.parse("http://localhost:5000/api/sos"),
+        Uri.parse("http://10.73.207.72:5000/api/alert/create"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "userId": widget.userId,
-          "location": {"lat": position.latitude, "lng": position.longitude},
+          "lat": position.latitude,
+          "lng": position.longitude,
         }),
       );
 
+      debugPrint("$logTag Response Code: ${response.statusCode}");
+      debugPrint("$logTag Raw Response Body: ${response.body}");
+
       if (response.statusCode == 200) {
+        debugPrint("$logTag SOS Triggered Successfully ✅");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("🚨 SOS Sent Successfully!"),
@@ -59,9 +98,12 @@ class _SOSButtonState extends State<SOSButton> {
           ),
         );
       } else {
+        debugPrint(
+            "$logTag ERROR: SOS request failed! Status: ${response.statusCode}, Body: ${response.body}");
         throw Exception("Failed to send SOS");
       }
     } catch (e) {
+      debugPrint("$logTag EXCEPTION: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("⚠️ Error: $e"),
@@ -69,6 +111,7 @@ class _SOSButtonState extends State<SOSButton> {
         ),
       );
     } finally {
+      debugPrint("$logTag === SOS PROCESS COMPLETED ===");
       setState(() {
         _tapCount = 0;
         _sending = false;
@@ -77,13 +120,19 @@ class _SOSButtonState extends State<SOSButton> {
   }
 
   void _handleTap() {
-    if (_sending) return;
+    if (_sending) {
+      debugPrint("$logTag SOS already in progress, ignoring tap.");
+      return;
+    }
 
     setState(() {
       _tapCount++;
     });
 
+    debugPrint("$logTag Button tapped $_tapCount times.");
+
     if (_tapCount == 3) {
+      debugPrint("$logTag Triple tap detected! Triggering SOS...");
       _sendSOS();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -112,11 +161,16 @@ class _SOSButtonState extends State<SOSButton> {
           ? const SizedBox(
         width: 24,
         height: 24,
-        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+        child:
+        CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
       )
           : const Text(
         "SOS",
-        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+        style: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
       ),
     );
   }
