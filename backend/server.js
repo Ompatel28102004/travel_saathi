@@ -1,11 +1,11 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const { connectDB } = require("./config/db.js");
+const { connectDB } = require("./config/db");
 const http = require("http");
-const userRoutes = require("./routes/userRoutes.js")
+const userRoutes = require("./routes/userRoutes")
 const geoFenceRoutes = require("./routes/geoFenceRoutes");
-
+const path = require('path')
 dotenv.config();
 const app = express();
 app.use(cors());

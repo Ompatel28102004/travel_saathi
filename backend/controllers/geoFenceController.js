@@ -1,4 +1,4 @@
-const GeoFence = require("../models/GeoFence");
+const GeoFence = require("../models/GeoFencing");
 const turf = require("@turf/turf");
 
 // ✅ Add a new geo-fence

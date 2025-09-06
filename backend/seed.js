@@ -1,9 +1,9 @@
 // import mongoose from "mongoose";
 const mongoose = require('mongoose')
 // import Aadhar from "./model/Aadhar.js";
-const Aadhar = require('./model/Aadhar.js')
+const Aadhar = require('./models/Aadhar.js')
 // import Passport from "./model/Passport.js";
-const Passport = require("./model/Passport.js")
+const Passport = require("./models/Passport.js")
 mongoose.connect("", {
   useNewUrlParser: true,
   useUnifiedTopology: true,

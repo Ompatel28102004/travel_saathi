@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Ompatel28102004/travel_saathi#readme",
   "dependencies": {
+    "@getbrevo/brevo": "^3.0.1",
     "@turf/turf": "^7.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",

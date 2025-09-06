@@ -34,6 +34,7 @@ const startRegistration = async (req, res) => {
     preferredLanguage,
   } = req.body;
 
+  // Ensure either Aadhar OR Passport is provided
   if (!aadharNo && !passportNo) {
     return res
       .status(400)
@@ -41,7 +42,10 @@ const startRegistration = async (req, res) => {
   }
 
   try {
+    // Generate OTP (6 digits)
     const otp = crypto.randomInt(100000, 999999).toString();
+
+    // Save temporary data + OTP (expires in 5 minutes)
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
     await Otp.create({
@@ -55,7 +59,7 @@ const startRegistration = async (req, res) => {
         email,
         contactNo,
         emergencyNo,
-        passwordHashed, // ⚠️ ideally hash password here before storing
+        passwordHashed,
         travelScope,
         preferredLanguage,
         passportPhoto: req.file ? req.file.path : null,
@@ -63,6 +67,7 @@ const startRegistration = async (req, res) => {
       expiresAt,
     });
 
+    // Send OTP via Brevo (Email for now, can replace with SMS API later)
     const apiInstance = new Brevo.TransactionalEmailsApi();
     apiInstance.setApiKey(
       Brevo.TransactionalEmailsApiApiKeys.apiKey,
@@ -76,7 +81,7 @@ const startRegistration = async (req, res) => {
       htmlContent: `<p>Your OTP is: <strong>${otp}</strong>. It will expire in 5 minutes.</p>`,
     });
 
-    res.status(200).json({ message: "OTP sent to email. Please verify." });
+    res.status(200).json({ message: "OTP sent. Please verify." });
   } catch (error) {
     console.error("Registration OTP Error:", error);
     res.status(500).json({ message: "Error sending OTP." });
@@ -98,11 +103,14 @@ const verifyOtpAndRegister = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired OTP." });
     }
 
+    // Save user permanently
     const newUser = new User(record.data);
     const savedUser = await newUser.save();
 
+    // Delete OTP record after success
     await Otp.deleteOne({ _id: record._id });
 
+    // Generate JWT
     const token = generateToken(savedUser._id);
 
     res.status(201).json({
