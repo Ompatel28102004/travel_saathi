@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-
+// import mongoose from "mongoose";
+const mongoose = require("mongoose")
 const itinerarySchema = new mongoose.Schema({
   state: { type: String, required: true },
   dateOfJourney: { type: Date, required: true },

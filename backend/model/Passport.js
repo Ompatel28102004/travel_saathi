@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-
+// import mongoose from "mongoose";
+const mongoose = require("mongoose")
 const passportSchema = new mongoose.Schema({
   passportNo: { type: String, required: true, unique: true }, // e.g., M1234567
   name: { type: String, required: true },

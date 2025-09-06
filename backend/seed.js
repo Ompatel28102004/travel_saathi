@@ -1,7 +1,9 @@
-import mongoose from "mongoose";
-import Aadhar from "./model/Aadhar.js";
-import Passport from "./model/Passport.js";
-
+// import mongoose from "mongoose";
+const mongoose = require('mongoose')
+// import Aadhar from "./model/Aadhar.js";
+const Aadhar = require('./model/Aadhar.js')
+// import Passport from "./model/Passport.js";
+const Passport = require("./model/Passport.js")
 mongoose.connect("mongodb+srv://ompatel:qwer1234@cluster0.yq3sqrs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
   useNewUrlParser: true,
   useUnifiedTopology: true,

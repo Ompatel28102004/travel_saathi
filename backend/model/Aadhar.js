@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-
+// import mongoose from "mongoose";
+const mongoose = require("mongoose")
 const aadharSchema = new mongoose.Schema({
   aadharNo: { type: String, required: true, unique: true }, // 12-digit number
   name: { type: String, required: true },

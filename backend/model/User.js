@@ -1,12 +1,12 @@
-import mongoose from "mongoose";
-
+// import mongoose from "mongoose";
+const mongoose = require("mongoose")
 const userSchema = new mongoose.Schema(
   {
     // Basic Info
     name: { type: String, required: true },
     gender: { type: String, enum: ["male", "female", "other"], required: true },
-    aadharNo: { type: String }, 
-    passportNo: { type: String }, 
+    aadharNo: { type: String },
+    passportNo: { type: String },
     email: { type: String, required: true, unique: true },
     contactNo: { type: String, required: true },
     emergencyNo: { type: String, required: true },

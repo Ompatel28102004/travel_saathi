@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
-
+// import mongoose from "mongoose";
+const mongoose = require("mongoose")
 const geoFenceSchema = new mongoose.Schema({
   state: { type: String, required: true }, // e.g., Assam
   prohibitedZones: [{ type: String }], // restricted areas
-  allowInternational: { type: Boolean, default: true }, 
+  allowInternational: { type: Boolean, default: true },
   allowDomestic: { type: Boolean, default: true },
   allowMale: { type: Boolean, default: true },
   allowFemale: { type: Boolean, default: true },
