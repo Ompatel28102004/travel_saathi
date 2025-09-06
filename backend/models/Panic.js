@@ -1,14 +1,30 @@
-// import mongoose from "mongoose";
-const mongoose = require("mongoose")
-const panicSchema = new mongoose.Schema({
+const mongoose = require("mongoose");
+
+const sosAlertSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  incidentTime: { type: Date, default: Date.now },
-  location: {
+
+  // Tourist snapshot (auto-filled from User)
+  touristName: String,
+  touristContact: String,
+
+  // Auto location (from frontend GPS or stored user location)
+  touristLocation: {
     lat: Number,
     lng: Number,
+    address: String,
   },
-  actionTaken: { type: String }, // operator/admin response
-});
 
-const Panic = mongoose.model("Panic", panicSchema);
-export default Panic;
+  category: { type: String, enum: ["SOS", "MEDICAL"], default: "SOS" },
+
+  status: { 
+    type: String, 
+    enum: ["active", "pending confirmation", "investigating", "resolved"], 
+    default: "active" 
+  },
+
+  adminResponse: String,
+  assignedTo: String, // which admin team is handling it
+
+}, { timestamps: true });
+
+module.exports = mongoose.model("SOSAlert", sosAlertSchema);
