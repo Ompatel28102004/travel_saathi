@@ -7,6 +7,7 @@ const {
   deleteGeoFence,
   checkLocation,
   getAllUsersLocations,
+  deleteGeoFenceById,
 } = require("../controllers/geoFenceController");
 
 const router = express.Router();
@@ -20,5 +21,5 @@ router.delete("/delete/:state", deleteGeoFence);
 // ✅ New APIs
 router.post("/check-location", checkLocation);   // Update user location
 router.get("/location/all-users", getAllUsersLocations);  // Admin view
-
+router.delete("/delete/:id", deleteGeoFenceById);
 module.exports = router;

@@ -63,6 +63,21 @@ const deleteGeoFence = async (req, res) => {
   }
 };
 
+const deleteGeoFenceById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedFence = await GeoFence.findByIdAndDelete(id);
+
+    if (!deletedFence) {
+      return res.status(404).json({ message: "No geo-fence found with that ID." });
+    }
+
+    res.json({ message: "GeoFence deleted successfully" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
 // ✅ Check if point is inside polygon & update User model
 const checkLocation = async (req, res) => {
   try {
@@ -145,4 +160,5 @@ module.exports = {
   deleteGeoFence,
   checkLocation,
   getAllUsersLocations,
+  deleteGeoFenceById
 };
