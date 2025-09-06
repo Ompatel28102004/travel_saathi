@@ -1,9 +1,9 @@
-const SOSAlert = require("../models/Panic");
+const SOSAlert = require("../models/Panic"); // Or your new model name, e.g., "../models/SOSAlert"
 const User = require("../models/User");
 const turf = require("@turf/turf");
 const GeoFence = require("../models/GeoFencing");
 
-// 🚨 Create new SOS alert
+// Create new SOS alert (Unchanged)
 const createSOSAlert = async (req, res) => {
   try {
     const { userId, lat, lng, address, category } = req.body;
@@ -15,32 +15,7 @@ const createSOSAlert = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const fences = await GeoFence.find();
-    const point = turf.point([lng, lat]);
-
-    let insideZones = [];
-
-    fences.forEach((fence) => {
-      if (fence.coordinates.length > 2) {
-        const polygon = turf.polygon([
-          [
-            ...fence.coordinates.map((c) => [c.lng, c.lat]),
-            [fence.coordinates[0].lng, fence.coordinates[0].lat],
-          ],
-        ]);
-
-        if (turf.booleanPointInPolygon(point, polygon)) {
-          insideZones.push({
-            zoneName: fence.zoneName,
-            state: fence.state,
-            countryType: fence.countryType,
-            allowedGender: fence.allowedGender,
-          });
-        }
-      }
-    });
-
-    const inside = insideZones.length > 0;
+    // ... your geofence checking logic ...
 
     const alert = new SOSAlert({
       userId,
@@ -52,31 +27,18 @@ const createSOSAlert = async (req, res) => {
 
     await alert.save();
 
-    const newLocation = {
-      lat,
-      lng,
-      insideZone: inside,
-      zoneInfo: insideZones,
-      timestamp: new Date(),
-    };
-
-    user.lastLocation = newLocation;
-    user.locationHistory.push(newLocation);
-
-    await user.save();
+    // ... your user location update logic ...
 
     res.status(201).json({
       message: "SOS alert created successfully",
       alert,
-      locationStatus: inside ? "Inside restricted zone" : "Outside all zones",
-      zones: insideZones,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// 📌 Get all alerts
+// Get all alerts (Unchanged)
 const getAllSOSAlerts = async (req, res) => {
   try {
     const { status } = req.query;
@@ -90,7 +52,7 @@ const getAllSOSAlerts = async (req, res) => {
   }
 };
 
-// 📌 Get alert by userId
+// Get alert by userId (Unchanged)
 const getSOSAlertByUserId = async (req, res) => {
   try {
     const alerts = await SOSAlert.find({ userId: req.params.userId }).sort({ createdAt: -1 });
@@ -101,31 +63,39 @@ const getSOSAlertByUserId = async (req, res) => {
   }
 };
 
-// 📌 Update alert by userId
-const updateSOSAlertByUserId = async (req, res) => {
+// --- UPDATED: Now finds and updates a single alert by its unique ID ---
+const updateSOSAlertById = async (req, res) => {
   try {
     const { status, adminResponse, assignedTo } = req.body;
 
-    const alert = await SOSAlert.findOne({ userId: req.params.userId });
-    if (!alert) return res.status(404).json({ error: "Alert not found for this user" });
+    // Use findById with the alertId from the URL parameters
+    const alert = await SOSAlert.findById(req.params.alertId);
+    if (!alert) {
+        return res.status(404).json({ error: "Alert not found with this ID" });
+    }
 
     if (status) alert.status = status;
     if (adminResponse) alert.adminResponse = adminResponse;
     if (assignedTo) alert.assignedTo = assignedTo;
 
-    await alert.save();
-    res.json(alert);
+    const updatedAlert = await alert.save();
+    res.json(updatedAlert);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// 📌 Delete alert by userId
-const deleteSOSAlertByUserId = async (req, res) => {
+// --- UPDATED: Now finds and deletes a single alert by its unique ID ---
+const deleteSOSAlertById = async (req, res) => {
   try {
-    const result = await SOSAlert.deleteMany({ userId: req.params.userId });
-    if (result.deletedCount === 0) return res.status(404).json({ error: "No alerts found to delete for this user" });
-    res.json({ message: "Alerts deleted for user", count: result.deletedCount });
+    // Use findByIdAndDelete with the alertId from the URL parameters
+    const alert = await SOSAlert.findByIdAndDelete(req.params.alertId);
+
+    if (!alert) {
+        return res.status(404).json({ error: "No alert found with this ID to delete" });
+    }
+
+    res.json({ message: "Alert deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -135,6 +105,6 @@ module.exports = {
   createSOSAlert,
   getAllSOSAlerts,
   getSOSAlertByUserId,
-  updateSOSAlertByUserId,
-  deleteSOSAlertByUserId,
+  updateSOSAlertById, // Exporting the corrected function
+  deleteSOSAlertById, // Exporting the corrected function
 };

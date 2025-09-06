@@ -97,14 +97,14 @@ const generateToken = (id) => {
     if (userExists) {
       return res.status(400).json({ message: "User with this email already exists." });
     }
-    
+
     const hash = deterministicHash({ name, aadharNo, passportNo, email, contactNo, emergencyNo, passwordHashed }, PEPPER);
     const id = uuidv4(); // avoid using passportNo as key
     const metadata = { schemaVersion: 1 };
     const createdAt = new Date().toISOString();
 
     const gateway = await newGateway();
-    
+
     let dataBlockHash;
 
     try {
@@ -233,4 +233,20 @@ const generateToken = (id) => {
   }
 };
 
-module.exports = {registerUser,loginUser}
+const getActiveUsers = async (req, res) => {
+  try {
+    // Defines "active" as any user whose location was updated in the last 7 days.
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const activeUsers = await User.find({
+      "lastLocation.timestamp": { $gte: sevenDaysAgo }
+    }).select('_id name'); // Only send the ID and name
+
+    res.json(activeUsers);
+  } catch (error) {
+    console.error("Error fetching active users:", error);
+    res.status(500).json({ message: "Server error fetching active users." });
+  }
+};
+
+module.exports = {registerUser,loginUser,getActiveUsers}

@@ -8,6 +8,7 @@ const geoFenceRoutes = require("./routes/geoFenceRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const sosRoutes = require("./routes/sosRoutes");
 const aadharPassportRoutes = require("./routes/aadharPassportRoutes");
+const aiRoutes = require("./routes/aiRoutes")
 const path = require('path')
 dotenv.config();
 const app = express();
@@ -32,6 +33,7 @@ app.use("/api/geofence", geoFenceRoutes);
 app.use("/api/admin",adminRoutes);
 app.use("/api/alert",sosRoutes);
 app.use("/api/aadharPassportVerification", aadharPassportRoutes);
+app.use("/api/ai", aiRoutes);
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

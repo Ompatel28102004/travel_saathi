@@ -1,6 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { registerUser, loginUser } = require('../controllers/userController');
+const { registerUser, loginUser, getActiveUsers } = require('../controllers/userController');
 const upload = require('../middlewares/upload'); // Your file upload middleware
 
 const router = express.Router();
@@ -25,5 +25,5 @@ router.post(
 );
 
 router.post('/login', loginValidation, loginUser);
-
+router.get('/active', getActiveUsers);
 module.exports = router;

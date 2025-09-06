@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import {
   Search,
   Filter,
@@ -8,71 +9,81 @@ import {
   MapPin,
   Loader2,
   AlertTriangle,
+  BrainCircuit,
+  Check,
 } from "lucide-react";
 
+// A simple, self-contained Toast Notification Component
+const Toast = ({ message, show }) => {
+  if (!show) return null;
+  return (
+    <div className="fixed bottom-5 right-5 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out flex items-center gap-2">
+      <Check className="w-5 h-5 text-green-400" />
+      <span>{message}</span>
+    </div>
+  );
+};
+
 const UsersPage = () => {
-  // --- State for API data, loading, and errors ---
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // --- State for controls (unchanged) ---
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  // --- Data Fetching with useEffect ---
+  const [analyzingUserId, setAnalyzingUserId] = useState(null);
+  const [toast, setToast] = useState({ show: false, message: "" });
+
+  const backendUrl = "http://localhost:5000";
+
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
       setError(null);
       try {
-        // IMPORTANT: Replace with your actual backend URL
-        const backendUrl = "http://localhost:5000";
         const response = await fetch(
           `${backendUrl}/api/geofence/location/all-users`
         );
-
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
+        if (!response.ok) throw new Error("Network response was not ok");
         const data = await response.json();
 
-        // --- Transform API data to match the structure our UI expects ---
         const transformedUsers = data.map((user) => ({
           id: user._id,
           name: user.name,
           email: user.email,
-          // API doesn't provide an avatar, so we generate one
           avatar: `https://i.pravatar.cc/150?u=${user._id}`,
-          // API doesn't provide a status, so we'll set a default for now
-          status: "Active",
+          status: user.lastLocation.insideZone ? "SOS" : "Active",
           lastSeen: {
             time: user.lastLocation.timestamp,
-            // Show zone name if available, otherwise show "Unknown"
             location:
-              user.lastLocation.zoneInfo[0]?.zoneName || "Unknown Location",
-          },
-          // API doesn't provide device info, so we create a placeholder
-          device: {
-            id: "N/A",
-            battery: user.lastLocation.insideZone ? 45 : 75, // Example logic
+              user.lastLocation.zoneInfo[0]?.zoneName ||
+              user.lastLocation.address ||
+              "Unknown Location",
           },
         }));
-
         setUsers(transformedUsers);
       } catch (err) {
         setError(err.message);
-        console.error("Failed to fetch users:", err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchUsers();
-  }, []); // The empty array [] means this effect runs only once when the component mounts
+  }, []);
 
-  // --- Filtering Logic (works on the fetched data) ---
+  const handleRunAnalysis = async (userId, userName) => {
+    setAnalyzingUserId(userId);
+    try {
+      await axios.post(`${backendUrl}/api/ai/start-analysis/${userId}`);
+      setToast({ show: true, message: `Analysis started for ${userName}.` });
+      setTimeout(() => setToast({ show: false, message: "" }), 3000);
+    } catch (err) {
+      alert(`Failed to start analysis for ${userName}.`);
+    } finally {
+      setTimeout(() => setAnalyzingUserId(null), 1000);
+    }
+  };
+
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -83,7 +94,6 @@ const UsersPage = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // --- Helper functions ---
   const getStatusClass = (status) => {
     switch (status) {
       case "Active":
@@ -97,50 +107,43 @@ const UsersPage = () => {
     }
   };
 
-  // --- UI Rendering ---
-  if (loading) {
+  if (loading)
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="p-6 flex justify-center items-center">
         <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-        <p className="ml-2 text-gray-600">Loading user data...</p>
       </div>
     );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center">
-        <AlertTriangle className="w-6 h-6 mr-3" />
-        <div>
-          <p className="font-bold">Error fetching data</p>
-          <p>{error}</p>
-        </div>
-      </div>
-    );
-  }
+  if (error)
+    return <div className="p-6 bg-red-50 text-red-700 rounded-lg">{error}</div>;
 
   return (
     <div className="space-y-6">
-      {/* Header and Controls are the same */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4"></div>
-
+      <Toast message={toast.message} show={toast.show} />
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+          <p className="text-sm text-gray-600">
+            Monitor, manage, and assist all registered tourists.
+          </p>
+        </div>
+      </div>
       <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col sm:flex-row gap-4">
         <div className="relative flex-grow">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
             placeholder="Search by name, ID, or email..."
-            className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div className="relative flex-shrink-0">
           <Filter className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
           <select
-            className="w-full sm:w-48 pl-11 pr-4 py-2.5 bg-gray-50 border-transparent rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full sm:w-48 pl-11 pr-4 py-2.5 bg-gray-50 border-transparent rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option>All</option>
             <option>Active</option>
@@ -149,8 +152,6 @@ const UsersPage = () => {
           </select>
         </div>
       </div>
-
-      {/* User Table now displays the fetched data */}
       <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
         <table className="w-full text-left">
           <thead className="bg-gray-50 text-gray-600">
@@ -163,10 +164,7 @@ const UsersPage = () => {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {filteredUsers.map((user) => (
-              <tr
-                key={user.id}
-                className="hover:bg-gray-50/50 transition-colors"
-              >
+              <tr key={user.id} className="hover:bg-gray-50/50">
                 <td className="p-4 flex items-center space-x-3">
                   <img
                     src={user.avatar}
@@ -174,9 +172,9 @@ const UsersPage = () => {
                     className="w-10 h-10 rounded-full"
                   />
                   <div>
-                    <p className="font-semibold text-gray-800">{user.name}</p>
+                    <p className="font-semibold">{user.name}</p>
                     <p className="text-xs text-gray-500">
-                      {user.id} &middot; {user.email}
+                      {user.id.slice(-12)} &middot; {user.email}
                     </p>
                   </div>
                 </td>
@@ -190,7 +188,7 @@ const UsersPage = () => {
                   </span>
                 </td>
                 <td className="p-4">
-                  <p className="text-sm font-medium text-gray-800">
+                  <p className="text-sm font-medium">
                     {user.lastSeen.location}
                   </p>
                   <p className="text-xs text-gray-500">
@@ -199,15 +197,27 @@ const UsersPage = () => {
                 </td>
                 <td className="p-4 text-center">
                   <div className="flex justify-center space-x-2">
+                    <button
+                      onClick={() => handleRunAnalysis(user.id, user.name)}
+                      disabled={analyzingUserId === user.id}
+                      className="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-md disabled:opacity-50"
+                      title="Run AI Analysis"
+                    >
+                      {analyzingUserId === user.id ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <BrainCircuit className="w-5 h-5" />
+                      )}
+                    </button>
                     <Link
                       to="/map"
-                      className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                      className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md"
                       title="View on Map"
                     >
                       <MapPin className="w-5 h-5" />
                     </Link>
                     <button
-                      className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                      className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md"
                       title="Deactivate User"
                     >
                       <UserX className="w-5 h-5" />
