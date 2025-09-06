@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -12,10 +12,12 @@ import {
 } from "lucide-react";
 
 const AdminSidebar = ({ handleLogout }) => {
+  const navigate = useNavigate();
   const getLinkClass = ({ isActive }) =>
-    `flex items-center p-3 rounded-lg transition-colors text-gray-700 ${isActive
-      ? "bg-blue-600 text-white font-semibold shadow-lg shadow-blue-500/30"
-      : "hover:bg-gray-100"
+    `flex items-center p-3 rounded-lg transition-colors text-gray-700 ${
+      isActive
+        ? "bg-blue-600 text-white font-semibold shadow-lg shadow-blue-500/30"
+        : "hover:bg-gray-100"
     }`;
   const onLogout = () => {
     if (handleLogout) handleLogout(); // do your cleanup (like clearing auth state)
