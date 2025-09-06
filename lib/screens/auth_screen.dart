@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'personal_details_screen.dart';
+import '../services/auth_services.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -30,7 +32,7 @@ class _AuthScreenState extends State<AuthScreen>
   bool isVerified = false;
   bool isLoggingIn = false;
   bool _obscurePassword = true;
-  String selectedIDType = 'Aadhaar';
+  String selectedIDType = 'aadhaar'; // Use lowercase for translation keys
   int currentTabIndex = 0;
 
   @override
@@ -59,11 +61,11 @@ class _AuthScreenState extends State<AuthScreen>
   // Email validation
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter your email';
+      return 'validation_enter_email'.tr();
     }
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegex.hasMatch(value)) {
-      return 'Please enter a valid email address';
+      return 'validation_valid_email'.tr();
     }
     return null;
   }
@@ -71,10 +73,10 @@ class _AuthScreenState extends State<AuthScreen>
   // Password validation
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter your password';
+      return 'validation_enter_password'.tr();
     }
     if (value.length < 6) {
-      return 'Password must be at least 6 characters';
+      return 'validation_password_length'.tr();
     }
     return null;
   }
@@ -82,19 +84,19 @@ class _AuthScreenState extends State<AuthScreen>
   // ID validation based on type
   String? _validateID(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter your $selectedIDType number';
+      return 'validation_enter_id'.tr(namedArgs: {'type': selectedIDType.tr()});
     }
 
-    if (selectedIDType == 'Aadhaar') {
+    if (selectedIDType == 'aadhaar') {
       // Aadhaar validation (12 digits)
       if (value.length != 12 || !RegExp(r'^\d{12}$').hasMatch(value)) {
-        return 'Aadhaar number must be 12 digits';
+        return 'validation_aadhaar_format'.tr();
       }
-    } else if (selectedIDType == 'Passport') {
+    } else if (selectedIDType == 'passport') {
       // Basic passport validation (6-9 alphanumeric characters)
       if (value.length < 6 || value.length > 9 ||
           !RegExp(r'^[A-Z0-9]{6,9}$').hasMatch(value.toUpperCase())) {
-        return 'Please enter a valid passport number';
+        return 'validation_passport_format'.tr();
       }
     }
     return null;
@@ -116,11 +118,11 @@ class _AuthScreenState extends State<AuthScreen>
       final idNumber = idController.text;
 
       // Simulate some IDs being invalid (for demo purposes)
-      if (selectedIDType == 'Aadhaar' && idNumber == '000000000000') {
-        throw Exception('Invalid Aadhaar number');
+      if (selectedIDType == 'aadhaar' && idNumber == '000000000000') {
+        throw Exception('invalid_aadhaar'.tr());
       }
-      if (selectedIDType == 'Passport' && idNumber.toUpperCase() == 'INVALID') {
-        throw Exception('Passport number not found');
+      if (selectedIDType == 'passport' && idNumber.toUpperCase() == 'INVALID') {
+        throw Exception('passport_not_found'.tr());
       }
 
       setState(() {
@@ -129,7 +131,7 @@ class _AuthScreenState extends State<AuthScreen>
       });
 
       // Show success message
-      _showSnackBar('ID Verified Successfully! 🎉', Colors.green);
+      _showSnackBar('verification_success'.tr(), Colors.green);
 
       // Haptic feedback
       HapticFeedback.lightImpact();
@@ -153,7 +155,7 @@ class _AuthScreenState extends State<AuthScreen>
         isVerifying = false;
         isVerified = false;
       });
-      _showSnackBar('Verification Failed: ${e.toString().replaceAll('Exception: ', '')}', Colors.red);
+      _showSnackBar('${'verification_failed'.tr()}: ${e.toString().replaceAll('Exception: ', '')}', Colors.red);
     }
   }
 
@@ -169,20 +171,38 @@ class _AuthScreenState extends State<AuthScreen>
       // Simulate API call
       await Future.delayed(const Duration(seconds: 2));
 
+      // TODO: Replace this with actual API call to get JWT token
+      const String mockJwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+
+      // Save login session
+      await AuthService.saveLoginSession(
+        token: mockJwtToken,
+        userName: emailController.text.split('@').first,
+        userID: emailController.text,
+        idType: 'Login',
+      );
+
       setState(() {
         isLoggingIn = false;
       });
 
-      _showSnackBar('Login Successful! Welcome back 👋', Colors.green);
+      _showSnackBar('login_success'.tr(), Colors.green);
 
-      // TODO: Navigate to dashboard
-      // Navigator.pushReplacementNamed(context, '/dashboard');
+      Navigator.pushReplacementNamed(
+        context,
+        '/dashboard',
+        arguments: {
+          'userName': emailController.text.split('@').first,
+          'userID': emailController.text,
+          'idType': 'Login',
+        },
+      );
 
     } catch (e) {
       setState(() {
         isLoggingIn = false;
       });
-      _showSnackBar('Login failed. Please check your credentials.', Colors.red);
+      _showSnackBar('login_failed'.tr(), Colors.red);
     }
   }
 
@@ -223,11 +243,26 @@ class _AuthScreenState extends State<AuthScreen>
         child: SafeArea(
           child: Column(
             children: [
-              // App Header
+              // App Header with Language Selector
               Container(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   children: [
+                    // Language selector row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Spacer(),
+                        LanguageSelector(
+                          onLanguageChanged: (locale) {
+                            context.setLocale(locale);
+                          },
+                          currentLocale: context.locale,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
                     // Logo placeholder - replace with actual logo
                     Container(
                       width: 80,
@@ -245,7 +280,7 @@ class _AuthScreenState extends State<AuthScreen>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Travel Saathi',
+                      'app_name'.tr(),
                       style: theme.textTheme.headlineMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -254,7 +289,7 @@ class _AuthScreenState extends State<AuthScreen>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Your Smart Travel Companion',
+                      'app_tagline'.tr(),
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: Colors.white.withOpacity(0.8),
                         fontSize: 16,
@@ -312,17 +347,17 @@ class _AuthScreenState extends State<AuthScreen>
                             fontWeight: FontWeight.w600,
                             fontSize: 16,
                           ),
-                          tabs: const [
+                          tabs: [
                             Tab(
                               child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 20),
-                                child: Text('Login'),
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: Text('login_tab'.tr()),
                               ),
                             ),
                             Tab(
                               child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 20),
-                                child: Text('Sign Up'),
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: Text('signup_tab'.tr()),
                               ),
                             ),
                           ],
@@ -359,7 +394,7 @@ class _AuthScreenState extends State<AuthScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Welcome Back!',
+              'login_welcome'.tr(),
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[800],
@@ -367,7 +402,7 @@ class _AuthScreenState extends State<AuthScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'Sign in to continue your journey',
+              'login_message'.tr(),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.grey[600],
               ),
@@ -377,7 +412,7 @@ class _AuthScreenState extends State<AuthScreen>
             // Email Field
             _buildInputField(
               controller: emailController,
-              label: 'Email Address',
+              label: 'email_label'.tr(),
               icon: Icons.email_outlined,
               validator: _validateEmail,
               keyboardType: TextInputType.emailAddress,
@@ -387,7 +422,7 @@ class _AuthScreenState extends State<AuthScreen>
             // Password Field
             _buildInputField(
               controller: passwordController,
-              label: 'Password',
+              label: 'password_label'.tr(),
               icon: Icons.lock_outlined,
               validator: _validatePassword,
               obscureText: _obscurePassword,
@@ -409,9 +444,9 @@ class _AuthScreenState extends State<AuthScreen>
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {
-                  _showSnackBar('Forgot password feature coming soon!', Colors.orange);
+                  _showSnackBar('forgot_password_snackbar'.tr(), Colors.orange);
                 },
-                child: const Text('Forgot Password?'),
+                child: Text('forgot_password'.tr()),
               ),
             ),
             const SizedBox(height: 32),
@@ -419,7 +454,7 @@ class _AuthScreenState extends State<AuthScreen>
             // Login Button
             _buildMainButton(
               onPressed: isLoggingIn ? null : login,
-              text: 'Login',
+              text: 'login_button'.tr(),
               isLoading: isLoggingIn,
               icon: Icons.login,
             ),
@@ -438,7 +473,7 @@ class _AuthScreenState extends State<AuthScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Create Account',
+              'signup_title'.tr(),
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[800],
@@ -446,7 +481,7 @@ class _AuthScreenState extends State<AuthScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'Verify your identity to get started',
+              'signup_message'.tr(),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.grey[600],
               ),
@@ -455,7 +490,7 @@ class _AuthScreenState extends State<AuthScreen>
 
             // ID Type Selector
             Text(
-              'Select ID Type',
+              'select_id_type'.tr(),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -470,10 +505,10 @@ class _AuthScreenState extends State<AuthScreen>
               child: Row(
                 children: [
                   Expanded(
-                    child: _buildIDTypeButton('Aadhaar', Icons.credit_card),
+                    child: _buildIDTypeButton('aadhaar', Icons.credit_card),
                   ),
                   Expanded(
-                    child: _buildIDTypeButton('Passport', Icons.travel_explore),
+                    child: _buildIDTypeButton('passport', Icons.travel_explore),
                   ),
                 ],
               ),
@@ -483,13 +518,13 @@ class _AuthScreenState extends State<AuthScreen>
             // ID Number Field
             _buildInputField(
               controller: idController,
-              label: '$selectedIDType Number',
-              icon: selectedIDType == 'Aadhaar' ? Icons.credit_card : Icons.travel_explore,
+              label: '${selectedIDType.tr()} ${'number'.tr()}',
+              icon: selectedIDType == 'aadhaar' ? Icons.credit_card : Icons.travel_explore,
               validator: _validateID,
-              keyboardType: selectedIDType == 'Aadhaar'
+              keyboardType: selectedIDType == 'aadhaar'
                   ? TextInputType.number
                   : TextInputType.text,
-              inputFormatters: selectedIDType == 'Aadhaar'
+              inputFormatters: selectedIDType == 'aadhaar'
                   ? [
                 FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(12),
@@ -498,16 +533,16 @@ class _AuthScreenState extends State<AuthScreen>
                 FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
                 LengthLimitingTextInputFormatter(9),
               ],
-              helperText: selectedIDType == 'Aadhaar'
-                  ? '12-digit Aadhaar number'
-                  : 'Passport number (6-9 characters)',
+              helperText: selectedIDType == 'aadhaar'
+                  ? 'aadhaar_helper'.tr()
+                  : 'passport_helper'.tr(),
             ),
             const SizedBox(height: 32),
 
             // Verify Button
             _buildMainButton(
               onPressed: (isVerifying || isVerified) ? null : verifyID,
-              text: isVerified ? 'Verified ✓' : 'Verify & Proceed',
+              text: isVerified ? 'verified_button'.tr() : 'verify_button'.tr(),
               isLoading: isVerifying,
               icon: isVerified ? Icons.check_circle : Icons.verified_user,
               backgroundColor: isVerified ? Colors.green : null,
@@ -528,7 +563,7 @@ class _AuthScreenState extends State<AuthScreen>
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'ID Verified Successfully!\nRedirecting to personal details...',
+                        'verification_redirect'.tr(),
                         style: TextStyle(
                           color: Colors.green[800],
                           fontWeight: FontWeight.w500,
@@ -557,7 +592,7 @@ class _AuthScreenState extends State<AuthScreen>
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Your ID will be securely stored using blockchain technology for tamper-proof verification.',
+                      'security_note'.tr(),
                       style: TextStyle(
                         color: Colors.blue[800],
                         fontSize: 13,
@@ -599,7 +634,7 @@ class _AuthScreenState extends State<AuthScreen>
             ),
             const SizedBox(width: 8),
             Text(
-              type,
+              type.tr(),
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.grey[600],
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
@@ -713,6 +748,113 @@ class _AuthScreenState extends State<AuthScreen>
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Updated Language Selector for easy_localization
+class LanguageSelector extends StatelessWidget {
+  final Function(Locale) onLanguageChanged;
+  final Locale currentLocale;
+
+  const LanguageSelector({
+    super.key,
+    required this.onLanguageChanged,
+    required this.currentLocale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final supportedLanguages = [
+      {'code': 'en', 'name': 'English', 'flag': '🇺🇸'},
+      {'code': 'hi', 'name': 'हिंदी', 'flag': '🇮🇳'},
+      {'code': 'bn', 'name': 'বাংলা', 'flag': '🇮🇳'},
+      {'code': 'as', 'name': 'অসমীয়া', 'flag': '🇮🇳'},
+      {'code': 'fr', 'name': 'Français', 'flag': '🇫🇷'},
+    ];
+
+    final currentLanguage = supportedLanguages.firstWhere(
+          (lang) => lang['code'] == currentLocale.languageCode,
+      orElse: () => supportedLanguages.first,
+    );
+
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('select_language'.tr()),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: supportedLanguages.length,
+                itemBuilder: (context, index) {
+                  final language = supportedLanguages[index];
+                  final isSelected = language['code'] == currentLocale.languageCode;
+
+                  return ListTile(
+                    leading: Text(
+                      language['flag']!,
+                      style: const TextStyle(fontSize: 24),
+                    ),
+                    title: Text(
+                      language['name']!,
+                      style: TextStyle(
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Theme.of(context).primaryColor : null,
+                      ),
+                    ),
+                    trailing: isSelected ? Icon(
+                      Icons.check_circle,
+                      color: Theme.of(context).primaryColor,
+                    ) : null,
+                    onTap: () {
+                      final newLocale = Locale(language['code']!);
+                      onLanguageChanged(newLocale);
+                      Navigator.of(context).pop();
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              currentLanguage['flag']!,
+              style: const TextStyle(fontSize: 20),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              currentLanguage['name']!,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(
+              Icons.keyboard_arrow_down,
+              color: Colors.white,
+              size: 20,
             ),
           ],
         ),
