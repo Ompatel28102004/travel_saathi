@@ -19,7 +19,7 @@ const server = http.createServer(app);
 
 
 // Routes
-app.use("/api/auth", authRoutes);
+// app.use("/api/auth", authRoutes);
 
 
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
