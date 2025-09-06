@@ -6,6 +6,8 @@ import 'screens/home_screen.dart';
 import 'screens/auth_screen.dart';
 import 'screens/personal_details_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/live_map_screen.dart';
+import 'screens/sos_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,6 +81,8 @@ class TravelSaathiApp extends StatelessWidget {
             idType: args['idType'],
           );
         },
+        '/live-map': (context) => const LiveMapScreen(),
+        '/sos': (context) => const SOSScreen(),
       },
     );
   }

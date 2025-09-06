@@ -6,10 +6,10 @@ const GeoFence = require("../models/GeoFencing");
 // 🚨 Create new SOS alert
 const createSOSAlert = async (req, res) => {
   try {
-    const { userId, lat, lng, address, category } = req.body;
+    const { userId, lat, lng, category } = req.body;
 
-    if (!userId || !lat || !lng || !address) {
-      return res.status(400).json({ error: "userId, lat, lng, and address are required" });
+    if (!userId || !lat || !lng) {
+      return res.status(400).json({ error: "userId, lat, and lng are required" });
     }
 
     const user = await User.findById(userId);
@@ -46,7 +46,7 @@ const createSOSAlert = async (req, res) => {
       userId,
       touristName: user.name,
       touristContact: user.contactNo,
-      touristLocation: { lat, lng, address },
+      touristLocation: { lat, lng }, // Removed address
       category: category || "SOS",
     });
 

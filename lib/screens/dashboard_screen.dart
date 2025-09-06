@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_services.dart';
 
-class TravelSaathiDashboard extends StatelessWidget {
+class TravelSaathiDashboard extends StatefulWidget {
   final String userName;
   final String userID;
   final String idType;
@@ -12,6 +12,25 @@ class TravelSaathiDashboard extends StatelessWidget {
     required this.userID,
     required this.idType,
   });
+
+  @override
+  State<TravelSaathiDashboard> createState() => _TravelSaathiDashboardState();
+}
+
+class _TravelSaathiDashboardState extends State<TravelSaathiDashboard> {
+  int _selectedIndex = 0;
+
+  void _onBottomNavTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 1) {
+      // Navigate to Live Map Screen
+      Navigator.pushNamed(context, '/live-map');
+    }
+    // Future: Add navigation for other tabs (Safety, Profile)
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +70,7 @@ class TravelSaathiDashboard extends StatelessWidget {
                 // Navigate to login screen and remove all previous routes
                 if (context.mounted) {
                   Navigator.of(context).pushNamedAndRemoveUntil(
-                    '/auth', // Replace with your login route
+                    '/auth',
                         (route) => false,
                   );
                 }
@@ -69,7 +88,7 @@ class TravelSaathiDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome Section
+            // ✅ Welcome Section
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -96,14 +115,14 @@ class TravelSaathiDashboard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.waving_hand,
                         color: Colors.white,
                         size: 24,
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Welcome, ${userName.split(' ').first}!',
+                        'Welcome, ${widget.userName.split(' ').first}!',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 24,
@@ -128,7 +147,7 @@ class TravelSaathiDashboard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      'Digital ID: $userID',
+                      'Digital ID: ${widget.userID}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
@@ -141,7 +160,7 @@ class TravelSaathiDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Safety Score Card
+            // ✅ Safety Score Card
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -207,7 +226,7 @@ class TravelSaathiDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Quick Actions
+            // ✅ Quick Actions
             const Text(
               'Quick Actions',
               style: TextStyle(
@@ -215,7 +234,7 @@ class TravelSaathiDashboard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
 
             GridView.count(
               crossAxisCount: 2,
@@ -234,7 +253,7 @@ class TravelSaathiDashboard extends StatelessWidget {
                 ),
                 _buildQuickActionCard(
                   context,
-                  'Panic Button',
+                  'SOS',
                   Icons.warning,
                   Colors.red,
                   'Emergency alert',
@@ -255,111 +274,11 @@ class TravelSaathiDashboard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-
-            // Recent Activity
-            const Text(
-              'Recent Activity',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  _buildActivityItem(
-                    Icons.check_circle,
-                    Colors.green,
-                    'Account Created',
-                    'Blockchain Digital ID generated',
-                    'Just now',
-                  ),
-                  const Divider(height: 20),
-                  _buildActivityItem(
-                    Icons.security,
-                    Colors.blue,
-                    'Safety Monitoring Active',
-                    'AI anomaly detection enabled',
-                    '1 min ago',
-                  ),
-                  const Divider(height: 20),
-                  _buildActivityItem(
-                    Icons.verified,
-                    Colors.purple,
-                    '$idType Verified',
-                    'Identity verification completed',
-                    '5 min ago',
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Coming Soon Features
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.purple[50]!, Colors.blue[50]!],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.purple[200]!),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.upcoming, color: Colors.purple[600]),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Coming Soon',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.purple[800],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '• Real-time geo-fencing alerts\n'
-                        '• Admin dashboard integration\n'
-                        '• Cross-border digital passport\n'
-                        '• AI-powered crime prediction\n'
-                        '• Emergency services integration',
-                    style: TextStyle(
-                      color: Colors.grey[700],
-                      fontSize: 14,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
 
-      // Bottom Navigation Bar
+      // ✅ Bottom Navigation Bar
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -377,6 +296,8 @@ class TravelSaathiDashboard extends StatelessWidget {
           unselectedItemColor: Colors.grey[600],
           backgroundColor: Colors.white,
           elevation: 0,
+          currentIndex: _selectedIndex,
+          onTap: _onBottomNavTapped,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
@@ -424,17 +345,23 @@ class TravelSaathiDashboard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('$title feature coming soon!'),
-                backgroundColor: color,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            if (title == 'Live Map') {
+              Navigator.pushNamed(context, '/live-map');
+            } else if (title == 'SOS') {
+              Navigator.pushNamed(context, '/sos');
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('$title feature coming soon!'),
+                  backgroundColor: color,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  margin: const EdgeInsets.all(16),
                 ),
-                margin: const EdgeInsets.all(16),
-              ),
-            );
+              );
+            }
           },
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -477,62 +404,6 @@ class TravelSaathiDashboard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildActivityItem(
-      IconData icon,
-      Color iconColor,
-      String title,
-      String subtitle,
-      String time,
-      ) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(
-            icon,
-            color: iconColor,
-            size: 20,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Text(
-          time,
-          style: TextStyle(
-            color: Colors.grey[500],
-            fontSize: 12,
-          ),
-        ),
-      ],
     );
   }
 }
