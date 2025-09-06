@@ -1,30 +1,34 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AuthPage from "./pages/Login";       // Login/Signup page
-import Dashboard from "./pages/Dashboard"; // Admin Dashboard
-import UsersPage from "./pages/UsersPage"; // Example: Manage Users
-import AlertsPage from "./pages/AlertsPage"; // Example: Safety Alerts
-import ReportsPage from "./pages/ReportsPage"; // Example: Reports
-import SettingsPage from "./pages/SettingsPage"; // Example: Settings
-import MapPage from "./pages/MapPage"; // Example: Map Integration
-import NotFound from "./pages/NotFound";   // 404 Page
+
+// Import Layouts
+import AdminLayout from "./layouts/AdminLayout";
+import MapLayout from "./layouts/MapLayout";
+
+// Import Pages
+import Dashboard from "./pages/Dashboard";
+import MapPage from "./pages/MapPage";
+import UsersPage from "./pages/UsersPage";
+import AlertsPage from "./pages/AlertsPage";
+import Login from "./pages/Login";
+// ... etc
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Default route → Auth page */}
-        <Route path="/" element={<AuthPage />} />
-
-        {/* Admin Dashboard + Sub Pages */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/map" element={<MapPage />} />
-        <Route path="/users" element={<UsersPage />} />
-        <Route path="/alerts" element={<AlertsPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-
-        {/* Fallback 404 */}
-        <Route path="*" element={<NotFound />} />
+        {/* Route 1: The Full-Screen Map Experience */}
+        <Route path="/map" element={<MapLayout />}>
+          <Route index element={<MapPage />} />
+        </Route>
+        {/* Route 2: The Standard Admin Dashboard Experience */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="alerts" element={<AlertsPage />} />
+          {/* Add other dashboard-related pages here */}
+        </Route>
+        {/* Add other routes like Login and NotFound here */}
+        Example: <Route path="/login" element={<Login />} />
       </Routes>
     </BrowserRouter>
   );

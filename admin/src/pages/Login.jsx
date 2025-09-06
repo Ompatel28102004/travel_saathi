@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Eye, EyeOff, Shield, MapPin, Users, AlertTriangle, Mail, Lock, Smartphone, Globe } from 'lucide-react';
 
 // --- Login Page Component ---
-const LoginPage = ({ handleLogin, loginData, setLoginData, loading, showPassword, setShowPassword, setCurrentPage }) => (
+const Login = ({ handleLogin, loginData, setLoginData, loading, showPassword, setShowPassword, setCurrentPage }) => (
   <div className="min-h-screen bg-gray-50 flex">
     {/* Left Side - Branding */}
     <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-blue-800 relative overflow-hidden">
@@ -17,7 +17,7 @@ const LoginPage = ({ handleLogin, loginData, setLoginData, loading, showPassword
           <h1 className="text-4xl font-light mb-4">Smart Tourist Safety</h1>
           <p className="text-blue-100 text-lg font-light">Monitoring & Incident Response System</p>
         </div>
-        
+
         <div className="grid grid-cols-1 gap-6 mt-12">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
@@ -28,7 +28,7 @@ const LoginPage = ({ handleLogin, loginData, setLoginData, loading, showPassword
               <p className="text-sm text-blue-100">Monitor tourist movements in restricted zones</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
               <AlertTriangle className="w-6 h-6" />
@@ -38,7 +38,7 @@ const LoginPage = ({ handleLogin, loginData, setLoginData, loading, showPassword
               <p className="text-sm text-blue-100">Instant alerts and automated incident reporting</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
               <Users className="w-6 h-6" />
@@ -300,7 +300,7 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
                 <p className="text-sm text-gray-300">Blockchain-based secure identity system for all tourists</p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-4">
               <Globe className="w-6 h-6 text-green-400 mt-1 flex-shrink-0" />
               <div>
@@ -308,7 +308,7 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
                 <p className="text-sm text-gray-300">Machine learning algorithms detect unusual patterns and behaviors</p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-4">
               <MapPin className="w-6 h-6 text-red-400 mt-1 flex-shrink-0" />
               <div>
@@ -318,7 +318,7 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white/10 rounded-xl p-6">
           <h4 className="font-medium mb-2">Need Help?</h4>
           <p className="text-sm text-gray-300 mb-3">Contact the system administrator for account approval and technical support.</p>
@@ -336,12 +336,12 @@ const AuthPages = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const [loginData, setLoginData] = useState({
     email: '',
     password: ''
   });
-  
+
   const [signupData, setSignupData] = useState({
     fullName: '',
     email: '',
@@ -357,7 +357,7 @@ const AuthPages = () => {
   const handleLogin = (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const loginEndpoint = `${backendUrl}/api/auth/login`;
     console.log("Simulating login to:", loginEndpoint);
     console.log("With data:", loginData);
@@ -368,7 +368,7 @@ const AuthPages = () => {
         // On successful login, navigate to the dashboard route
         navigate('/dashboard');
     }, 1000);
-    
+
     // --- Real API Call (Commented Out) ---
     /*
     axios.post(loginEndpoint, loginData, { withCredentials: true })
@@ -388,14 +388,14 @@ const AuthPages = () => {
 
   const handleSignup = (e) => {
     e.preventDefault();
-    
+
     if (signupData.password !== signupData.confirmPassword) {
       alert('Passwords do not match!');
       return;
     }
-    
+
     setLoading(true);
-    
+
     const { confirmPassword, ...signupPayload } = signupData;
     const signupEndpoint = `${backendUrl}/api/auth/signup`;
     console.log("Simulating signup to:", signupEndpoint);
@@ -428,7 +428,7 @@ const AuthPages = () => {
 
   // Render Login or Signup pages
   if (currentPage === 'login') {
-    return <LoginPage 
+    return <Login
       handleLogin={handleLogin}
       loginData={loginData}
       setLoginData={setLoginData}
@@ -439,7 +439,7 @@ const AuthPages = () => {
     />;
   }
 
-  return <SignupPage 
+  return <SignupPage
     handleSignup={handleSignup}
     signupData={signupData}
     setSignupData={setSignupData}
