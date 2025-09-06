@@ -5,6 +5,7 @@ const { connectDB } = require("./config/db");
 const http = require("http");
 const userRoutes = require("./routes/userRoutes")
 const geoFenceRoutes = require("./routes/geoFenceRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const path = require('path')
 dotenv.config();
 const app = express();
@@ -26,6 +27,7 @@ app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 // --- API Routes ---
 app.use('/api/users', userRoutes);
 app.use("/api/geofence", geoFenceRoutes);
+app.use("/api/admin",adminRoutes);
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
