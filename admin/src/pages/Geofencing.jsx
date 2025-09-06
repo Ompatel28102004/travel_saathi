@@ -35,12 +35,12 @@ L.Icon.Default.mergeOptions({
 });
 
 // --- Internal Component to Handle Map Drawing Logic ---
+// This component correctly manages the leaflet-draw toolbar and its events.
 const DrawControl = ({ onCreated, onDeleted, onEdit }) => {
   const map = useMap();
-  const drawnItemsRef = useRef(new L.FeatureGroup());
 
   useEffect(() => {
-    const drawnItems = drawnItemsRef.current;
+    const drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
     const drawControl = new L.Control.Draw({
@@ -61,17 +61,22 @@ const DrawControl = ({ onCreated, onDeleted, onEdit }) => {
 
     map.addControl(drawControl);
 
-    map.on(L.Draw.Event.CREATED, onCreated);
+    const handleCreate = (event) => {
+      const layer = event.layer;
+      drawnItems.clearLayers(); // Clear previous drawings
+      drawnItems.addLayer(layer);
+      onCreated(event);
+    };
+
+    map.on(L.Draw.Event.CREATED, handleCreate);
     map.on(L.Draw.Event.DELETED, onDeleted);
     map.on(L.Draw.Event.EDITED, onEdit);
 
-    // Cleanup function for when the component unmounts
     return () => {
-      map.off(L.Draw.Event.CREATED, onCreated);
+      map.off(L.Draw.Event.CREATED, handleCreate);
       map.off(L.Draw.Event.DELETED, onDeleted);
       map.off(L.Draw.Event.EDITED, onEdit);
-
-      // FIX: The map object does not have .hasControl, simply remove it.
+      // The map.removeControl() is the correct and safe way to clean up
       map.removeControl(drawControl);
     };
   }, [map, onCreated, onDeleted, onEdit]);
@@ -81,7 +86,6 @@ const DrawControl = ({ onCreated, onDeleted, onEdit }) => {
 
 // --- The Main Page Component ---
 const AddGeofencePage = () => {
-  // --- State Hooks ---
   const [formData, setFormData] = useState({
     zoneName: "",
     state: "Gujarat",
@@ -97,7 +101,6 @@ const AddGeofencePage = () => {
 
   const backendUrl = "http://localhost:5000";
 
-  // --- API Functions ---
   const fetchFences = async () => {
     try {
       const response = await axios.get(`${backendUrl}/api/geofence/get`);
@@ -121,7 +124,6 @@ const AddGeofencePage = () => {
     setError("");
     setSuccess("");
     const payload = { ...formData, coordinates };
-
     try {
       await axios.post(`${backendUrl}/api/geofence/create`, payload);
       setSuccess("Geo-fence created successfully!");
@@ -132,7 +134,7 @@ const AddGeofencePage = () => {
         allowedGender: "Both",
       });
       setCoordinates([]);
-      await fetchFences(); // Refresh the list of fences
+      await fetchFences();
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError(err.response?.data?.message || "An error occurred.");
@@ -155,11 +157,11 @@ const AddGeofencePage = () => {
     }
   };
 
-  // --- Event Handlers ---
   const handleInputChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // FIX: Wrap handler functions in useCallback to stabilize them for the useEffect dependency array
+  // We wrap these map event handlers in useCallback to ensure they are stable
+  // and don't cause the DrawControl component to re-render unnecessarily.
   const handleShapeCreated = useCallback((event) => {
     const layer = event.layer;
     const latlngs = layer
@@ -196,7 +198,6 @@ const AddGeofencePage = () => {
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Map Column */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-4 h-[650px]">
           <MapContainer
             center={[23.0225, 72.5714]}
@@ -219,12 +220,12 @@ const AddGeofencePage = () => {
                 pathOptions={
                   selectedFence === fence._id
                     ? {
-                        color: "#ef4444",
+                        color: "#9333ea",
                         weight: 3,
-                        fillColor: "#dc2626",
-                        fillOpacity: 0.4,
+                        fillColor: "#ef4444",
+                        fillOpacity: 0.5,
                       }
-                    : { color: "#9333ea", fillOpacity: 0.2 }
+                    : { color: "#dc2626", fillOpacity: 0.2 }
                 }
               >
                 <Tooltip>{fence.zoneName}</Tooltip>
@@ -232,8 +233,6 @@ const AddGeofencePage = () => {
             ))}
           </MapContainer>
         </div>
-
-        {/* Form & List Column */}
         <div className="space-y-6">
           <form
             onSubmit={handleSubmit}
@@ -285,7 +284,6 @@ const AddGeofencePage = () => {
               <span>{loading ? "Saving..." : "Save New Geo-fence"}</span>
             </button>
           </form>
-
           <div className="bg-white rounded-xl shadow-sm p-6 space-y-3">
             <h3 className="text-lg font-semibold">Existing Zones</h3>
             <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
@@ -295,6 +293,7 @@ const AddGeofencePage = () => {
                     key={fence._id}
                     onMouseEnter={() => setSelectedFence(fence._id)}
                     onMouseLeave={() => setSelectedFence(null)}
+                    onClick={() => setSelectedFence(fence._id)} // Added onClick for better mobile/touch experience
                     className={`p-3 rounded-lg flex justify-between items-center transition-colors cursor-pointer ${
                       selectedFence === fence._id
                         ? "bg-blue-50"
@@ -322,8 +321,6 @@ const AddGeofencePage = () => {
               )}
             </div>
           </div>
-
-          {/* Feedback Messages */}
           {error && (
             <div className="flex items-center text-sm text-red-600 bg-red-50 p-3 rounded-lg">
               <AlertCircle className="w-5 h-5 mr-2" />
