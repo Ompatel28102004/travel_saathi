@@ -1,39 +1,59 @@
-// import mongoose from "mongoose";
-const mongoose = require("mongoose")
-const userSchema = new mongoose.Schema(
-  {
-    // Basic Info
-    name: { type: String, required: true },
-    gender: { type: String, enum: ["male", "female", "other"], required: true },
-    aadharNo: { type: String },
-    passportNo: { type: String },
-    email: { type: String, required: true, unique: true },
-    contactNo: { type: String, required: true },
-    emergencyNo: { type: String, required: true },
-    passportPhoto: { type: String }, // file path / cloud URL
+const mongoose = require("mongoose");
 
-    // Security
-    passwordHashed: { type: String, required: true },
-    dataBlockHash: { type: String },
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  aadharNo: { type: String },
+  passportNo: { type: String },
+  email: { type: String, required: true, unique: true },
+  contactNo: { type: String },
+  emergencyNo: { type: String },
+  photo: { type: String },
+  passwordHashed: { type: String, required: true },
+  dataBlockHash: { type: String },
 
-    // Relations
-    itinerary: [{ type: mongoose.Schema.Types.ObjectId, ref: "Itinerary" }],
-    feedbacks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Feedback" }],
-    panicHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Panic" }],
+  // Itinerary
+  itinerary: [
+    {
+      state: String,
+      dateOfJourney: Date,
+      returnDate: Date,
+      placesToVisit: [String],
+    },
+  ],
 
-    // Travel Scope
-    travelScope: { type: String, enum: ["India-only", "International"], default: "India-only" },
-    preferredLanguage: { type: String, default: "en" },
+  // Latest GeoFencing Info
+  lastLocation: {
+    lat: Number,
+    lng: Number,
+    insideZone: { type: Boolean, default: false },
+    zoneInfo: [
+      {
+        zoneName: String,
+        state: String,
+        countryType: String,
+        allowedGender: String,
+      },
+    ],
+    timestamp: { type: Date, default: Date.now },
+  },
 
-    // Live Location
-    liveLocation: {
+  // Optional: Store history
+  locationHistory: [
+    {
       lat: Number,
       lng: Number,
-      lastUpdated: { type: Date, default: Date.now },
+      insideZone: Boolean,
+      zoneInfo: [
+        {
+          zoneName: String,
+          state: String,
+          countryType: String,
+          allowedGender: String,
+        },
+      ],
+      timestamp: { type: Date, default: Date.now },
     },
-  },
-  { timestamps: true }
-);
+  ],
+});
 
-const User = mongoose.model("User", userSchema);
-export default User;
+module.exports = mongoose.model("User", userSchema);

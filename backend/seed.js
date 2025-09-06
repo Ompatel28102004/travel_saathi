@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 const Aadhar = require('./model/Aadhar.js')
 // import Passport from "./model/Passport.js";
 const Passport = require("./model/Passport.js")
-mongoose.connect("mongodb+srv://ompatel:qwer1234@cluster0.yq3sqrs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
+mongoose.connect("", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   dbName: "travelSaathi",

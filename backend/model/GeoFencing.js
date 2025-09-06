@@ -1,14 +1,25 @@
-// import mongoose from "mongoose";
-const mongoose = require("mongoose")
+import mongoose from "mongoose";
+
 const geoFenceSchema = new mongoose.Schema({
-  state: { type: String, required: true }, // e.g., Assam
-  prohibitedZones: [{ type: String }], // restricted areas
-  allowInternational: { type: Boolean, default: true },
-  allowDomestic: { type: Boolean, default: true },
-  allowMale: { type: Boolean, default: true },
-  allowFemale: { type: Boolean, default: true },
-  allowOther: { type: Boolean, default: true },
+  zoneName: { type: String, required: true },       // e.g., "Kaziranga Core Area"
+  state: { type: String, required: true },          // e.g., "Assam"
+  countryType: { 
+    type: String, 
+    enum: ["India", "International"], 
+    required: true 
+  },
+  allowedGender: { 
+    type: String, 
+    enum: ["Male", "Female", "Both"], 
+    default: "Both" 
+  },
+  coordinates: [
+    {
+      lat: { type: Number, required: true },
+      lng: { type: Number, required: true },
+    }
+  ],  // polygon/boundary points
+  createdAt: { type: Date, default: Date.now }
 });
 
-const GeoFencing = mongoose.model("GeoFencing", geoFenceSchema);
-export default GeoFencing;
+export default mongoose.model("GeoFence", geoFenceSchema);
