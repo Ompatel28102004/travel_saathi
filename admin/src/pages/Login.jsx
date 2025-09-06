@@ -30,8 +30,8 @@ const Login = ({
       <div className="absolute inset-0 bg-black/10"></div>
       <div className="relative z-10 flex flex-col justify-center items-center p-12 text-white">
         <div className="mb-8">
-          <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
-            <Shield className="w-10 h-10" />
+          <div className="w-40 h-40 bg-white rounded-2xl flex items-center justify-center mb-6">
+            <img src="/logo.jpg" alt="logo" className="rounded" />
           </div>
           <h1 className="text-4xl font-light mb-4">Smart Tourist Safety</h1>
           <p className="text-blue-100 text-lg font-light">

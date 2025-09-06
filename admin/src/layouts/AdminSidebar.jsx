@@ -30,8 +30,8 @@ const AdminSidebar = ({ handleLogout }) => {
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
       {/* Logo/Brand Section */}
       <div className="p-4 border-b flex items-center space-x-3">
-        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-          <Shield className="w-6 h-6 text-white" />
+        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center ">
+          <img src="/logo.jpg" alt="logo" className="rounded" />
         </div>
         <div>
           <h1 className="text-lg font-bold text-gray-800">Tourist Safety</h1>
