@@ -1,139 +1,172 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
   Activity,
   Clock,
   AlertTriangle,
   AlertCircle,
-  CheckCircle,
-  Wifi,
   Navigation,
   FileText,
+  HeartPulse,
+  ShieldAlert,
 } from "lucide-react";
 
 const Dashboard = () => {
-  // Mock data for the dashboard
-  const dashboardStats = {
-    activeTourists: 1923,
-    emergencyAlerts: 5,
-    iotDevices: 156,
+  // --- State Management ---
+  const [dashboardStats, setDashboardStats] = useState({
+    activeTourists: 0,
+    emergencyAlerts: 0,
+  });
+  const [recentAlerts, setRecentAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  // --- Backend API Configuration ---
+  const backendUrl = "http://localhost:5000"; // Adjust if your backend runs on a different port
+
+  // --- Data Fetching Logic ---
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch alerts and user locations concurrently for better performance
+        const [alertsResponse, usersResponse] = await Promise.all([
+          axios.get(`${backendUrl}/api/alert/getAll`),
+          axios.get(`${backendUrl}/api/geofence/location/all-users`), // Corrected user location endpoint
+        ]);
+
+        const allAlerts = alertsResponse.data || [];
+        const allUsers = usersResponse.data || []; // The root of the response is the array of users
+
+        // --- Process Data for Stats Cards ---
+        // Filter alerts by status in a case-insensitive way
+        const activeAlertsCount = allAlerts.filter(
+          (a) => a.status && a.status.toLowerCase() === "active"
+        ).length;
+
+        setDashboardStats({
+          activeTourists: allUsers.length, // Count based on the length of the user array
+          emergencyAlerts: activeAlertsCount,
+        });
+
+        // --- Process Data for Recent Alerts List ---
+        const sortedAlerts = allAlerts.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setRecentAlerts(sortedAlerts.slice(0, 5));
+
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch dashboard data:", err);
+        setError(
+          "Could not load dashboard data. Please ensure the backend server is running."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+    const intervalId = setInterval(fetchData, 30000); // Auto-refresh data
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, []);
+
+  // --- Helper Functions ---
+  const formatTime = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMinutes = Math.floor((now - date) / 60000);
+
+    if (diffMinutes < 1) return "Just now";
+    if (diffMinutes < 60) return `${diffMinutes} min ago`;
+    if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)} hours ago`;
+    return date.toLocaleDateString();
   };
 
-  const recentAlerts = [
-    {
-      id: 1,
-      type: "emergency",
-      message: "Tourist entered restricted zone - Kaziranga Core Area",
-      time: "2 min ago",
-      status: "active",
-    },
-    {
-      id: 2,
-      type: "missing",
-      message: "No activity detected for 3 hours - Tourist ID: TID2847",
-      time: "15 min ago",
-      status: "investigating",
-    },
-    {
-      id: 3,
-      type: "panic",
-      message: "Panic button pressed - Cherrapunji Trek Route",
-      time: "1 hour ago",
-      status: "resolved",
-    },
-    {
-      id: 4,
-      type: "geofence",
-      message: "Multiple tourists near border zone - Dawki Bridge",
-      time: "2 hours ago",
-      status: "monitoring",
-    },
-    {
-      id: 5,
-      type: "health",
-      message: "IoT device shows irregular heartbeat - Device ID: IOT156",
-      time: "3 hours ago",
-      status: "resolved",
-    },
-  ];
+  const getAlertIcon = (category) => {
+    switch (category?.toLowerCase()) {
+      case "medical":
+        return <HeartPulse className="w-5 h-5 text-red-500" />;
+      case "sos":
+        return <ShieldAlert className="w-5 h-5 text-orange-500" />;
+      default:
+        return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+    }
+  };
 
-  const touristHeatmap = [
-    { zone: "Shillong City Center", count: 456, risk: "low" },
-    { zone: "Cherrapunji Falls", count: 234, risk: "medium" },
-    { zone: "Kaziranga National Park", count: 189, risk: "high" },
-    { zone: "Dawki River", count: 167, risk: "medium" },
-    { zone: "Tawang Monastery", count: 145, risk: "low" },
-  ];
+  // --- Render Logic ---
+  if (loading) {
+    return <div className="p-6 text-center">Loading dashboard data...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center text-red-600 bg-red-50 rounded-lg">
+        {error}
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 bg-gray-50 min-h-full">
+      {/* Page Header */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
+        <p className="text-gray-500">
+          A real-time summary of tourist safety activity.
+        </p>
+      </div>
+
       {/* ## Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Active Tourists */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Active Now</p>
-              <p className="text-3xl font-bold text-green-600">
+              <p className="text-sm font-medium text-gray-600">
+                Active Tourists
+              </p>
+              <p className="text-4xl font-bold text-green-600">
                 {dashboardStats.activeTourists.toLocaleString()}
               </p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <Activity className="w-6 h-6 text-green-600" />
+            <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center">
+              <Activity className="w-8 h-8 text-green-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center">
             <Clock className="w-4 h-4 text-gray-500 mr-1" />
-            <span className="text-sm text-gray-600">Real-time tracking</span>
+            <span className="text-sm text-gray-600">Live tracking enabled</span>
           </div>
         </div>
 
         {/* Emergency Alerts */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
-                Emergency Alerts
-              </p>
-              <p className="text-3xl font-bold text-red-600">
+              <p className="text-sm font-medium text-gray-600">Active Alerts</p>
+              <p className="text-4xl font-bold text-red-600">
                 {dashboardStats.emergencyAlerts}
               </p>
             </div>
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <AlertTriangle className="w-6 h-6 text-red-600" />
+            <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center">
+              <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center">
             <AlertCircle className="w-4 h-4 text-red-500 mr-1" />
             <span className="text-sm text-red-600">
-              2 require immediate action
+              {dashboardStats.emergencyAlerts} require immediate action
             </span>
-          </div>
-        </div>
-
-        {/* IoT Devices */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">IoT Devices</p>
-              <p className="text-3xl font-bold text-purple-600">
-                {dashboardStats.iotDevices}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Wifi className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center">
-            <CheckCircle className="w-4 h-4 text-green-500 mr-1" />
-            <span className="text-sm text-green-600">98% online status</span>
           </div>
         </div>
       </div>
 
-      {/* ## Recent Alerts + Heatmap */}
+      {/* ## Recent Alerts & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Alerts */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm">
           <div className="p-6 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">
               Recent Alerts & Incidents
@@ -141,104 +174,91 @@ const Dashboard = () => {
           </div>
           <div className="p-6">
             <div className="space-y-4">
-              {recentAlerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg"
-                >
+              {recentAlerts.length > 0 ? (
+                recentAlerts.map((alert) => (
                   <div
-                    className={`w-2 h-2 rounded-full mt-2 ${
-                      alert.type === "emergency"
-                        ? "bg-red-500"
-                        : alert.type === "panic"
-                        ? "bg-orange-500"
-                        : alert.type === "missing"
-                        ? "bg-yellow-500"
-                        : "bg-blue-500"
-                    }`}
-                  />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">
-                      {alert.message}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">{alert.time}</p>
-                  </div>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${
-                      alert.status === "active"
-                        ? "bg-red-100 text-red-700"
-                        : alert.status === "investigating"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : alert.status === "resolved"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-blue-100 text-blue-700"
-                    }`}
+                    key={alert._id}
+                    className="flex items-center space-x-4 p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
                   >
-                    {alert.status}
-                  </span>
-                </div>
-              ))}
+                    <div className="flex-shrink-0">
+                      {getAlertIcon(alert.category)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">
+                        {alert.touristName} in{" "}
+                        <span className="font-semibold">
+                          {alert.touristLocation.address}
+                        </span>
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formatTime(alert.createdAt)}
+                      </p>
+                    </div>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${
+                        alert.status && alert.status.toLowerCase() === "active"
+                          ? "bg-red-100 text-red-700"
+                          : alert.status &&
+                            alert.status.toLowerCase() === "investigating"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : alert.status &&
+                            alert.status.toLowerCase() === "resolved"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-blue-100 text-blue-700"
+                      }`}
+                    >
+                      {alert.status}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-center py-4">
+                  No recent alerts.
+                </p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Heatmap */}
-        <div className="bg-white rounded-xl border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Tourist Hotspots
-            </h3>
-          </div>
-          <div className="p-6 space-y-4">
-            {touristHeatmap.map((zone, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    {zone.zone}
-                  </p>
-                  <p className="text-xs text-gray-500">{zone.count} tourists</p>
-                </div>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${
-                    zone.risk === "high"
-                      ? "bg-red-100 text-red-700"
-                      : zone.risk === "medium"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
-                >
-                  {zone.risk} risk
-                </span>
+        {/* Quick Actions */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Quick Actions
+          </h3>
+          <div className="space-y-3">
+            <button
+              onClick={() => navigate("/admin/alerts")}
+              className="w-full flex items-center space-x-3 p-4 bg-red-50 rounded-lg text-left hover:bg-red-100 transition-colors"
+            >
+              <AlertTriangle className="w-6 h-6 text-red-600" />
+              <div>
+                <p className="font-semibold text-red-900">View Active Alerts</p>
+                <p className="text-sm text-red-700">Respond to emergencies</p>
               </div>
-            ))}
+            </button>
+            <button
+              onClick={() => navigate("/map")}
+              className="w-full flex items-center space-x-3 p-4 bg-green-50 rounded-lg text-left hover:bg-green-100 transition-colors"
+            >
+              <Navigation className="w-6 h-6 text-green-600" />
+              <div>
+                <p className="font-semibold text-green-900">Live Map</p>
+                <p className="text-sm text-green-700">Track all tourists</p>
+              </div>
+            </button>
+            <button
+              onClick={() => navigate("/reports")}
+              className="w-full flex items-center space-x-3 p-4 bg-purple-50 rounded-lg text-left hover:bg-purple-100 transition-colors"
+            >
+              <FileText className="w-6 h-6 text-purple-600" />
+              <div>
+                <p className="font-semibold text-purple-900">Generate Report</p>
+                <p className="text-sm text-purple-700">
+                  Create incident reports
+                </p>
+              </div>
+            </button>
           </div>
-        </div>
-      </div>
-
-      {/* ## Quick Actions */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <button className="p-4 bg-red-50 rounded-lg text-center hover:bg-red-100 transition-colors">
-            <AlertTriangle className="w-6 h-6 text-red-600 mx-auto mb-2" />
-            <p className="text-sm font-medium text-red-900">
-              View Active Alerts
-            </p>
-          </button>
-
-          <button className="p-4 bg-green-50 rounded-lg text-center hover:bg-green-100 transition-colors">
-            <Navigation className="w-6 h-6 text-green-600 mx-auto mb-2" />
-            <p className="text-sm font-medium text-green-900">Live Map</p>
-          </button>
-
-          <button className="p-4 bg-purple-50 rounded-lg text-center hover:bg-purple-100 transition-colors">
-            <FileText className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-            <p className="text-sm font-medium text-purple-900">
-              Generate Report
-            </p>
-          </button>
         </div>
       </div>
     </div>

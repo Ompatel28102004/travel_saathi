@@ -122,18 +122,7 @@ const UsersPage = () => {
   return (
     <div className="space-y-6">
       {/* Header and Controls are the same */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="text-sm text-gray-600">
-            Monitor, manage, and assist all registered tourists.
-          </p>
-        </div>
-        <button className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-colors">
-          <Plus className="w-5 h-5" />
-          <span>Add New User</span>
-        </button>
-      </div>
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4"></div>
 
       <div className="bg-white p-4 rounded-xl shadow-sm flex flex-col sm:flex-row gap-4">
         <div className="relative flex-grow">
