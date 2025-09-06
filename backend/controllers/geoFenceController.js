@@ -1,6 +1,6 @@
 const GeoFence = require("../models/GeoFencing");
 const turf = require("@turf/turf");
-
+const User = require("../models/User")
 // ✅ Add a new geo-fence
 const createGeoFence = async (req, res) => {
   try {
