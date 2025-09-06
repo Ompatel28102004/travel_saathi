@@ -1,10 +1,29 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { Eye, EyeOff, Shield, MapPin, Users, AlertTriangle, Mail, Lock, Smartphone, Globe } from 'lucide-react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import {
+  Eye,
+  EyeOff,
+  Shield,
+  MapPin,
+  Users,
+  AlertTriangle,
+  Mail,
+  Lock,
+  Smartphone,
+  Globe,
+} from "lucide-react";
 
 // --- Login Page Component ---
-const Login = ({ handleLogin, loginData, setLoginData, loading, showPassword, setShowPassword, setCurrentPage }) => (
+const Login = ({
+  handleLogin,
+  loginData,
+  setLoginData,
+  loading,
+  showPassword,
+  setShowPassword,
+  setCurrentPage,
+}) => (
   <div className="min-h-screen bg-gray-50 flex">
     {/* Left Side - Branding */}
     <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-blue-800 relative overflow-hidden">
@@ -15,7 +34,9 @@ const Login = ({ handleLogin, loginData, setLoginData, loading, showPassword, se
             <Shield className="w-10 h-10" />
           </div>
           <h1 className="text-4xl font-light mb-4">Smart Tourist Safety</h1>
-          <p className="text-blue-100 text-lg font-light">Monitoring & Incident Response System</p>
+          <p className="text-blue-100 text-lg font-light">
+            Monitoring & Incident Response System
+          </p>
         </div>
 
         <div className="grid grid-cols-1 gap-6 mt-12">
@@ -25,7 +46,9 @@ const Login = ({ handleLogin, loginData, setLoginData, loading, showPassword, se
             </div>
             <div>
               <h3 className="font-medium">Real-time Geo-fencing</h3>
-              <p className="text-sm text-blue-100">Monitor tourist movements in restricted zones</p>
+              <p className="text-sm text-blue-100">
+                Monitor tourist movements in restricted zones
+              </p>
             </div>
           </div>
 
@@ -35,7 +58,9 @@ const Login = ({ handleLogin, loginData, setLoginData, loading, showPassword, se
             </div>
             <div>
               <h3 className="font-medium">Emergency Response</h3>
-              <p className="text-sm text-blue-100">Instant alerts and automated incident reporting</p>
+              <p className="text-sm text-blue-100">
+                Instant alerts and automated incident reporting
+              </p>
             </div>
           </div>
 
@@ -45,7 +70,9 @@ const Login = ({ handleLogin, loginData, setLoginData, loading, showPassword, se
             </div>
             <div>
               <h3 className="font-medium">Tourist Management</h3>
-              <p className="text-sm text-blue-100">Digital ID system with blockchain security</p>
+              <p className="text-sm text-blue-100">
+                Digital ID system with blockchain security
+              </p>
             </div>
           </div>
         </div>
@@ -59,19 +86,25 @@ const Login = ({ handleLogin, loginData, setLoginData, loading, showPassword, se
           <div className="lg:hidden w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
             <Shield className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-3xl font-light text-gray-900 mb-2">Administrator Login</h2>
+          <h2 className="text-3xl font-light text-gray-900 mb-2">
+            Administrator Login
+          </h2>
           <p className="text-gray-600">Access the control dashboard</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
               <div className="relative">
                 <input
                   type="email"
                   value={loginData.email}
-                  onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                  onChange={(e) =>
+                    setLoginData({ ...loginData, email: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="admin@touristsafety.gov"
                   required
@@ -81,12 +114,16 @@ const Login = ({ handleLogin, loginData, setLoginData, loading, showPassword, se
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={loginData.password}
-                  onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                  onChange={(e) =>
+                    setLoginData({ ...loginData, password: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="Enter your password"
                   required
@@ -96,17 +133,31 @@ const Login = ({ handleLogin, loginData, setLoginData, loading, showPassword, se
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
               <label className="flex items-center">
-                <input type="checkbox" className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                <span className="ml-2 text-sm text-gray-600">Keep me signed in</span>
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-600">
+                  Keep me signed in
+                </span>
               </label>
-              <button type="button" className="text-sm text-blue-600 hover:text-blue-800">Forgot password?</button>
+              <button
+                type="button"
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Forgot password?
+              </button>
             </div>
 
             <button
@@ -114,14 +165,14 @@ const Login = ({ handleLogin, loginData, setLoginData, loading, showPassword, se
               disabled={loading}
               className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 font-medium"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
 
             <div className="text-center pt-4">
               <span className="text-gray-600">Need admin access? </span>
               <button
                 type="button"
-                onClick={() => setCurrentPage('signup')}
+                onClick={() => setCurrentPage("signup")}
                 className="text-blue-600 hover:text-blue-800 font-medium"
               >
                 Register here
@@ -135,7 +186,17 @@ const Login = ({ handleLogin, loginData, setLoginData, loading, showPassword, se
 );
 
 // --- Signup Page Component ---
-const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPassword, setShowPassword, showConfirmPassword, setShowConfirmPassword, setCurrentPage }) => (
+const SignupPage = ({
+  handleSignup,
+  signupData,
+  setSignupData,
+  loading,
+  showPassword,
+  setShowPassword,
+  showConfirmPassword,
+  setShowConfirmPassword,
+  setCurrentPage,
+}) => (
   <div className="min-h-screen bg-gray-50 flex">
     {/* Left Side - Form */}
     <div className="flex-1 flex items-center justify-center p-8">
@@ -144,30 +205,42 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
           <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
             <Shield className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-3xl font-light text-gray-900 mb-2">Administrator Registration</h2>
-          <p className="text-gray-600">Create your admin account to manage the system</p>
+          <h2 className="text-3xl font-light text-gray-900 mb-2">
+            Administrator Registration
+          </h2>
+          <p className="text-gray-600">
+            Create your admin account to manage the system
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
           <form onSubmit={handleSignup} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name
+                </label>
                 <input
                   type="text"
                   value={signupData.fullName}
-                  onChange={(e) => setSignupData({...signupData, fullName: e.target.value})}
+                  onChange={(e) =>
+                    setSignupData({ ...signupData, fullName: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="John Doe"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
                 <input
                   type="tel"
                   value={signupData.phone}
-                  onChange={(e) => setSignupData({...signupData, phone: e.target.value})}
+                  onChange={(e) =>
+                    setSignupData({ ...signupData, phone: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="+91 9876543210"
                   required
@@ -176,11 +249,15 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
               <input
                 type="email"
                 value={signupData.email}
-                onChange={(e) => setSignupData({...signupData, email: e.target.value})}
+                onChange={(e) =>
+                  setSignupData({ ...signupData, email: e.target.value })
+                }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="admin@department.gov.in"
                 required
@@ -189,26 +266,34 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Department
+                </label>
                 <select
                   value={signupData.department}
-                  onChange={(e) => setSignupData({...signupData, department: e.target.value})}
+                  onChange={(e) =>
+                    setSignupData({ ...signupData, department: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   required
                 >
                   <option value="">Select Department</option>
-                  <option value="police">Police Department</option>
-                  <option value="tourism">Tourism Department</option>
-                  <option value="emergency">Emergency Services</option>
-                  <option value="admin">System Administration</option>
+                  <option value="Operations">Police Department</option>
+                  <option value="Tourism">Tourism Department</option>
+                  <option value="Support">Emergency Services</option>
+                  <option value="Management">System Administration</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Employee ID</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Employee ID
+                </label>
                 <input
                   type="text"
                   value={signupData.employeeId}
-                  onChange={(e) => setSignupData({...signupData, employeeId: e.target.value})}
+                  onChange={(e) =>
+                    setSignupData({ ...signupData, employeeId: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="EMP001"
                   required
@@ -217,12 +302,16 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={signupData.password}
-                  onChange={(e) => setSignupData({...signupData, password: e.target.value})}
+                  onChange={(e) =>
+                    setSignupData({ ...signupData, password: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="Create a secure password"
                   required
@@ -232,18 +321,29 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password
+              </label>
               <div className="relative">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   value={signupData.confirmPassword}
-                  onChange={(e) => setSignupData({...signupData, confirmPassword: e.target.value})}
+                  onChange={(e) =>
+                    setSignupData({
+                      ...signupData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="Confirm your password"
                   required
@@ -253,14 +353,25 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
 
             <div className="flex items-start">
-              <input type="checkbox" className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1" required />
-              <span className="ml-2 text-sm text-gray-600">I agree to the Terms of Service and acknowledge that I am authorized to access this system as a government official.</span>
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1"
+                required
+              />
+              <span className="ml-2 text-sm text-gray-600">
+                I agree to the Terms of Service and acknowledge that I am
+                authorized to access this system as a government official.
+              </span>
             </div>
 
             <button
@@ -268,14 +379,14 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
               disabled={loading}
               className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 font-medium"
             >
-              {loading ? 'Creating Account...' : 'Create Admin Account'}
+              {loading ? "Creating Account..." : "Create Admin Account"}
             </button>
 
             <div className="text-center pt-4">
               <span className="text-gray-600">Already have an account? </span>
               <button
                 type="button"
-                onClick={() => setCurrentPage('login')}
+                onClick={() => setCurrentPage("login")}
                 className="text-blue-600 hover:text-blue-800 font-medium"
               >
                 Sign in here
@@ -297,7 +408,9 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
               <Smartphone className="w-6 h-6 text-blue-400 mt-1 flex-shrink-0" />
               <div>
                 <h4 className="font-medium mb-1">Digital Tourist ID</h4>
-                <p className="text-sm text-gray-300">Blockchain-based secure identity system for all tourists</p>
+                <p className="text-sm text-gray-300">
+                  Blockchain-based secure identity system for all tourists
+                </p>
               </div>
             </div>
 
@@ -305,7 +418,10 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
               <Globe className="w-6 h-6 text-green-400 mt-1 flex-shrink-0" />
               <div>
                 <h4 className="font-medium mb-1">AI Anomaly Detection</h4>
-                <p className="text-sm text-gray-300">Machine learning algorithms detect unusual patterns and behaviors</p>
+                <p className="text-sm text-gray-300">
+                  Machine learning algorithms detect unusual patterns and
+                  behaviors
+                </p>
               </div>
             </div>
 
@@ -313,7 +429,9 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
               <MapPin className="w-6 h-6 text-red-400 mt-1 flex-shrink-0" />
               <div>
                 <h4 className="font-medium mb-1">Real-time Monitoring</h4>
-                <p className="text-sm text-gray-300">Live tracking and geo-fence alerts for restricted areas</p>
+                <p className="text-sm text-gray-300">
+                  Live tracking and geo-fence alerts for restricted areas
+                </p>
               </div>
             </div>
           </div>
@@ -321,7 +439,10 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
 
         <div className="bg-white/10 rounded-xl p-6">
           <h4 className="font-medium mb-2">Need Help?</h4>
-          <p className="text-sm text-gray-300 mb-3">Contact the system administrator for account approval and technical support.</p>
+          <p className="text-sm text-gray-300 mb-3">
+            Contact the system administrator for account approval and technical
+            support.
+          </p>
           <p className="text-sm text-blue-300">support@touristsafety.gov.in</p>
         </div>
       </div>
@@ -332,124 +453,113 @@ const SignupPage = ({ handleSignup, signupData, setSignupData, loading, showPass
 // --- Main AuthPages Component ---
 const AuthPages = () => {
   const navigate = useNavigate();
-  const [currentPage, setCurrentPage] = useState('login');
+  const [currentPage, setCurrentPage] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [loginData, setLoginData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
 
   const [signupData, setSignupData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    department: '',
-    employeeId: '',
-    password: '',
-    confirmPassword: ''
+    fullName: "",
+    email: "",
+    phone: "",
+    department: "Operations",
+    employeeId: "",
+    state: "Gujarat",
+    password: "",
+    confirmPassword: "",
   });
 
-  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const backendUrl = "http://localhost:5000";
 
   const handleLogin = (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const loginEndpoint = `${backendUrl}/api/auth/login`;
-    console.log("Simulating login to:", loginEndpoint);
-    console.log("With data:", loginData);
+    const loginEndpoint = `${backendUrl}/api/admin/admin-login`;
 
-    // --- API Call Simulation ---
-    setTimeout(() => {
-        setLoading(false);
-        // On successful login, navigate to the dashboard route
-        navigate('/dashboard');
-    }, 1000);
-
-    // --- Real API Call (Commented Out) ---
-    /*
-    axios.post(loginEndpoint, loginData, { withCredentials: true })
-      .then(response => {
-        console.log('Login successful:', response.data);
-        navigate('/dashboard');
+    axios
+      .post(loginEndpoint, loginData)
+      .then((response) => {
+        console.log("Login successful:", response.data);
+        localStorage.setItem("adminToken", response.data.token);
+        navigate("/admin");
       })
-      .catch(error => {
-        console.error('Login failed:', error.response ? error.response.data : error.message);
-        alert('Login failed. Please check your credentials and try again.');
+      .catch((error) => {
+        const errorMessage = error.response
+          ? error.response.data.message
+          : error.message;
+        console.error("Login failed:", errorMessage);
+        alert(`Login failed: ${errorMessage}`);
       })
       .finally(() => {
         setLoading(false);
       });
-    */
   };
 
   const handleSignup = (e) => {
     e.preventDefault();
 
     if (signupData.password !== signupData.confirmPassword) {
-      alert('Passwords do not match!');
+      alert("Passwords do not match!");
       return;
     }
 
     setLoading(true);
 
     const { confirmPassword, ...signupPayload } = signupData;
-    const signupEndpoint = `${backendUrl}/api/auth/signup`;
-    console.log("Simulating signup to:", signupEndpoint);
-    console.log("With data:", signupPayload);
+    const signupEndpoint = `${backendUrl}/api/admin/admin-register`;
 
-    // --- API Call Simulation ---
-    setTimeout(() => {
-        setLoading(false);
-        alert('Account created successfully (simulation)! Please sign in.');
-        setCurrentPage('login');
-    }, 1000);
-
-    // --- Real API Call (Commented Out) ---
-    /*
-    axios.post(signupEndpoint, signupPayload, { withCredentials: true })
-      .then(response => {
-        console.log('Signup successful:', response.data);
-        alert('Account created successfully! Please login.');
-        setCurrentPage('login');
+    axios
+      .post(signupEndpoint, signupPayload)
+      .then((response) => {
+        console.log("Signup successful:", response.data);
+        alert("Account created successfully! Please sign in.");
+        setCurrentPage("login");
       })
-      .catch(error => {
-        console.error('Signup failed:', error.response ? error.response.data : error.message);
-        alert('Signup failed. Please try again.');
+      .catch((error) => {
+        const errorMessage = error.response
+          ? error.response.data.message
+          : error.message;
+        console.error("Signup failed:", errorMessage);
+        alert(`Signup failed: ${errorMessage}`);
       })
       .finally(() => {
         setLoading(false);
       });
-    */
   };
 
-  // Render Login or Signup pages
-  if (currentPage === 'login') {
-    return <Login
-      handleLogin={handleLogin}
-      loginData={loginData}
-      setLoginData={setLoginData}
+  if (currentPage === "login") {
+    return (
+      <Login
+        handleLogin={handleLogin}
+        loginData={loginData}
+        setLoginData={setLoginData}
+        loading={loading}
+        showPassword={showPassword}
+        setShowPassword={setShowPassword}
+        setCurrentPage={setCurrentPage}
+      />
+    );
+  }
+
+  return (
+    <SignupPage
+      handleSignup={handleSignup}
+      signupData={signupData}
+      setSignupData={setSignupData}
       loading={loading}
       showPassword={showPassword}
       setShowPassword={setShowPassword}
+      showConfirmPassword={showConfirmPassword}
+      setShowConfirmPassword={setShowConfirmPassword}
       setCurrentPage={setCurrentPage}
-    />;
-  }
-
-  return <SignupPage
-    handleSignup={handleSignup}
-    signupData={signupData}
-    setSignupData={setSignupData}
-    loading={loading}
-    showPassword={showPassword}
-    setShowPassword={setShowPassword}
-    showConfirmPassword={showConfirmPassword}
-    setShowConfirmPassword={setShowConfirmPassword}
-    setCurrentPage={setCurrentPage}
-  />;
+    />
+  );
 };
 
 export default AuthPages;

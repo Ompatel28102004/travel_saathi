@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import {
   Bell,
   Search,
@@ -9,10 +9,12 @@ import {
   UserCircle,
   Settings,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const AdminNavbar = ({ sidebarOpen, setSidebarOpen, handleLogout }) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // This function makes the title dynamic and clear
   const getPageTitle = () => {
@@ -26,6 +28,12 @@ const AdminNavbar = ({ sidebarOpen, setSidebarOpen, handleLogout }) => {
       default:
         return "Admin Panel";
     }
+  };
+
+  // Centralized logout
+  const onLogout = () => {
+    if (handleLogout) handleLogout();
+    navigate("/login");
   };
 
   return (
@@ -81,7 +89,7 @@ const AdminNavbar = ({ sidebarOpen, setSidebarOpen, handleLogout }) => {
                     <Settings className="w-4 h-4 mr-2" /> Settings
                   </a>
                   <button
-                    onClick={handleLogout}
+                    onClick={onLogout}
                     className="flex items-center w-full p-2 text-sm text-red-600 rounded-md hover:bg-red-50"
                   >
                     <LogOut className="w-4 h-4 mr-2" /> Logout

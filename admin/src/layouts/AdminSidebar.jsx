@@ -8,16 +8,19 @@ import {
   Shield,
   LogOut,
   UserCircle,
+  MapPin, // ✅ New icon for geofencing
 } from "lucide-react";
 
 const AdminSidebar = ({ handleLogout }) => {
-  // Define a consistent style for NavLink
   const getLinkClass = ({ isActive }) =>
-    `flex items-center p-3 rounded-lg transition-colors text-gray-700 ${
-      isActive
-        ? "bg-blue-600 text-white font-semibold shadow-lg shadow-blue-500/30"
-        : "hover:bg-gray-100"
+    `flex items-center p-3 rounded-lg transition-colors text-gray-700 ${isActive
+      ? "bg-blue-600 text-white font-semibold shadow-lg shadow-blue-500/30"
+      : "hover:bg-gray-100"
     }`;
+  const onLogout = () => {
+    if (handleLogout) handleLogout(); // do your cleanup (like clearing auth state)
+    navigate("/login"); // then redirect
+  };
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
@@ -46,6 +49,9 @@ const AdminSidebar = ({ handleLogout }) => {
         <NavLink to="/map" className={getLinkClass}>
           <Map className="w-5 h-5 mr-3" /> Live Map
         </NavLink>
+        <NavLink to="/admin/geofencing" className={getLinkClass}>
+          <MapPin className="w-5 h-5 mr-3" /> Add Geofencing
+        </NavLink>
       </nav>
 
       {/* User Profile & Logout Section */}
@@ -58,7 +64,7 @@ const AdminSidebar = ({ handleLogout }) => {
           </div>
         </div>
         <button
-          onClick={handleLogout}
+          onClick={onLogout}
           className="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
         >
           <LogOut className="w-5 h-5 mr-3" /> Logout
