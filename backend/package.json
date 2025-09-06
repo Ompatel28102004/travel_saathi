@@ -20,6 +20,7 @@
   "homepage": "https://github.com/Ompatel28102004/travel_saathi#readme",
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",
+    "@google/generative-ai": "^0.24.1",
     "@turf/turf": "^7.2.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
