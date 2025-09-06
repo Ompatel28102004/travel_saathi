@@ -9,5 +9,4 @@ const aadharSchema = new mongoose.Schema({
   dob: { type: Date, required: true },
 });
 
-const Aadhar = mongoose.model("Aadhar", aadharSchema);
-export default Aadhar;
+module.exports = mongoose.model("Aadhar", aadharSchema);

@@ -35,5 +35,12 @@
   "validation_passport_format": "Formato de pasaporte inválido",
   "invalid_aadhaar": "Este número de Aadhaar es inválido",
   "passport_not_found": "Pasaporte no encontrado",
-  "select_language": "Seleccionar idioma"
+  "select_language": "Seleccionar idioma",
+  "send_otp_button": "Envoyer OTP",
+  "otp_sent_to": "L'OTP a été envoyé à votre mobile/email enregistré",
+  "enter_otp_label": "Entrez OTP",
+  "otp_label": "OTP",
+  "otp_helper": "Veuillez entrer le code OTP à 6 chiffres envoyé sur votre mobile/email",
+  "submit_otp_button": "Soumettre OTP",
+  "change_id_button": "Changer l'ID"
 }

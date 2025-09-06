@@ -35,5 +35,12 @@
   "validation_passport_format": "অবৈধ পাসপোর্ট ফর্ম্যাট",
   "invalid_aadhaar": "এই আধার নম্বরটি অবৈধ",
   "passport_not_found": "পাসপোর্ট পাওয়া যায়নি",
-  "select_language": "ভাষা নির্বাচন করুন"
+  "select_language": "ভাষা নির্বাচন করুন",
+  "send_otp_button": "ওটিপি পাঠান",
+  "otp_sent_to": "ওটিপি আপনার নিবন্ধিত মোবাইল/ইমেল-এ পাঠানো হয়েছে",
+  "enter_otp_label": "ওটিপি লিখুন",
+  "otp_label": "ওটিপি",
+  "otp_helper": "দয়া করে আপনার মোবাইল/ইমেল-এ পাঠানো ৬ সংখ্যার ওটিপি লিখুন",
+  "submit_otp_button": "ওটিপি জমা দিন",
+  "change_id_button": "আইডি পরিবর্তন করুন"
 }

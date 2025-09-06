@@ -9,5 +9,5 @@ const passportSchema = new mongoose.Schema({
   dob: { type: Date, required: true },
 });
 
-const Passport = mongoose.model("Passport", passportSchema);
-export default Passport;
+module.exports = mongoose.model("Passport", passportSchema);
+

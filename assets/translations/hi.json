@@ -35,6 +35,13 @@
   "validation_passport_format": "अमान्य पासपोर्ट फ़ॉर्मेट",
   "invalid_aadhaar": "यह आधार नंबर अमान्य है",
   "passport_not_found": "पासपोर्ट नहीं मिला",
-  "select_language": "भाषा चुनें"
+  "select_language": "भाषा चुनें",
+  "send_otp_button": "ओटीपी भेजें",
+  "otp_sent_to": "ओटीपी आपके पंजीकृत मोबाइल/ईमेल पर भेजा गया है",
+  "enter_otp_label": "ओटीपी दर्ज करें",
+  "otp_label": "ओटीपी",
+  "otp_helper": "कृपया अपने मोबाइल/ईमेल पर भेजा गया 6-अंकीय ओटीपी दर्ज करें",
+  "submit_otp_button": "ओटीपी सबमिट करें",
+  "change_id_button": "आईडी बदलें"
 }
 

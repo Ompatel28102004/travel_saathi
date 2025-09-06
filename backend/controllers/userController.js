@@ -1,9 +1,75 @@
-// import User from "../models/User.js"; // Your new User model
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const express = require('express');
+const { v4: uuidv4 } = require('uuid');
+require('dotenv').config();
+
+const grpc = require('@grpc/grpc-js');
+const { connect, signers } = require('@hyperledger/fabric-gateway');
+
 const User = require("../models/User")
-// import jwt from "jsonwebtoken";
+
 const jwt = require("jsonwebtoken")
-// import { validationResult } from "express-validator";
+
 const {validationResult} = require("express-validator")
+
+const {
+  PEPPER,
+  FABRIC_MSP_ID,
+  FABRIC_PEER_ENDPOINT,
+  FABRIC_TLS_CERT,
+  FABRIC_CERT,
+  FABRIC_KEY_DIR,
+  CHANNEL_NAME,
+  CHAINCODE_NAME,
+} = process.env;
+
+function deterministicHash({ name, aadharNo, passportNo, email, contactNo, emergencyNo, passwordHashed }, pepper) {
+  // Normalize for deterministic hashing (trim/uppercase passport, trim name, strip spaces in contact)
+  const canonical = {
+    name: String(name || '').trim(),
+    passportNo: String(passportNo || '').toUpperCase().replace(/\s+/g, ''),
+    contactNo: String(contactNo || '').replace(/\s+/g, '')
+  };
+  const json = JSON.stringify(canonical); // explicit order in literal above
+  return crypto.createHash('sha256').update(json + (pepper || '')).digest('hex');
+}
+
+function loadFirstFile(dir) {
+  const files = fs.readdirSync(dir);
+  if (!files.length) throw new Error(`No files in ${dir}`);
+  return path.join(dir, files[0]);
+}
+
+function newGrpcConnection() {
+  const tlsRootCert = fs.readFileSync(path.resolve(__dirname, "../", FABRIC_TLS_CERT));
+  const sslCreds = grpc.credentials.createSsl(tlsRootCert);
+  return new grpc.Client(FABRIC_PEER_ENDPOINT, sslCreds);
+}
+
+async function newGateway() {
+  const client = newGrpcConnection();
+
+  const cert = fs.readFileSync(path.resolve(__dirname, "../", FABRIC_CERT));
+  const keyPath = loadFirstFile(path.resolve(__dirname, "../", FABRIC_KEY_DIR));
+  const keyPem = fs.readFileSync(keyPath);
+
+  const identity = { mspId: FABRIC_MSP_ID, credentials: cert };
+  const signer = signers.newPrivateKeySigner(crypto.createPrivateKey(keyPem));
+
+  return connect({
+    client,
+    identity,
+    signer,
+    evaluateOptions: () => ({ deadline: Date.now() + 5000 }),
+    endorseOptions: () => ({ deadline: Date.now() + 15000 }),
+    submitOptions:  () => ({ deadline: Date.now() + 15000 }),
+    commitStatusOptions: () => ({ deadline: Date.now() + 60000 })
+  });
+}
+
+
 // Helper to generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -31,6 +97,41 @@ const generateToken = (id) => {
     if (userExists) {
       return res.status(400).json({ message: "User with this email already exists." });
     }
+    
+    const hash = deterministicHash({ name, aadharNo, passportNo, email, contactNo, emergencyNo, passwordHashed }, PEPPER);
+    const id = uuidv4(); // avoid using passportNo as key
+    const metadata = { schemaVersion: 1 };
+    const createdAt = new Date().toISOString();
+
+    const gateway = await newGateway();
+    
+    let dataBlockHash;
+
+    try {
+      const network = gateway.getNetwork(CHANNEL_NAME);
+      const contract = network.getContract(CHAINCODE_NAME);
+
+      const resultBytes = await contract.submitTransaction(
+        'Put',
+        id,
+        hash,
+        JSON.stringify(metadata),
+        createdAt
+      );
+
+      const result = JSON.parse(Buffer.from(resultBytes).toString());
+
+      const responseData = {
+        id: result.id,
+        hash: result.hash,
+        createdAt: result.createdAt
+      };
+
+      dataBlockHash = responseData.id;
+
+    } finally {
+      gateway.close();
+    }
 
     // Create a new user instance
     const newUser = new User({
@@ -38,6 +139,7 @@ const generateToken = (id) => {
       aadharNo,
       passportNo,
       email,
+      dataBlockHash,
       contactNo,
       emergencyNo,
       passwordHashed, // Saving the pre-hashed password from the frontend
@@ -79,6 +181,36 @@ const generateToken = (id) => {
 
   try {
     const user = await User.findOne({ email });
+
+    const dataHashCalculated = deterministicHash(
+      {
+        name: user.name,
+        aadharNo: user.aadharNo,
+        passportNo: user.passportNo,
+        email: user.email,
+        contactNo: user.contactNo,
+        emergencyNo: user.emergencyNo,
+        passwordHashed: user.passwordHashed
+      },
+      PEPPER
+    );
+
+    const gateway = await newGateway();
+    let dataFromFabric;
+    try {
+      const network = gateway.getNetwork(CHANNEL_NAME);
+      const contract = network.getContract(CHAINCODE_NAME);
+
+      const resultBytes = await contract.evaluateTransaction("Get", user.dataBlockHash);
+      dataFromFabric = JSON.parse(Buffer.from(resultBytes).toString());
+    } finally {
+      gateway.close();
+    }
+
+    // 3️⃣ Compare both
+    if (dataHashCalculated !== dataFromFabric.hash) {
+      return res.status(401).json({ message: "Data integrity check failed" });
+    }
 
     // ⚠️ See the security note below about this comparison
     if (user && user.passwordHashed === password) {

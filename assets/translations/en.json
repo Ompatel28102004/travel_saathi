@@ -35,5 +35,12 @@
   "validation_passport_format": "Invalid passport format",
   "invalid_aadhaar": "This Aadhaar number is invalid",
   "passport_not_found": "Passport not found",
-  "select_language": "Select Language"
+  "select_language": "Select Language",
+  "send_otp_button": "Send OTP",
+  "otp_sent_to": "OTP has been sent to your registered mobile/email",
+  "enter_otp_label": "Enter OTP",
+  "otp_label": "OTP",
+  "otp_helper": "Please enter the 6-digit OTP sent to your mobile/email",
+  "submit_otp_button": "Submit OTP",
+  "change_id_button": "Change ID"
 }

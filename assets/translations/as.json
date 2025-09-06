@@ -35,5 +35,12 @@
   "validation_passport_format": "অবৈধ পাছপোৰ্ট ফৰ্মেট",
   "invalid_aadhaar": "এই আধাৰ নম্বৰ অবৈধ",
   "passport_not_found": "পাছপোৰ্ট পোৱা নগ'ল",
-  "select_language": "ভাষা নিৰ্বাচন কৰক"
+  "select_language": "ভাষা নিৰ্বাচন কৰক",
+  "send_otp_button": "OTP পঠিওক",
+  "otp_sent_to": "OTP আপোনাৰ নিবন্ধিত মোবাইল/ইমেইললৈ পঠোৱা হৈছে",
+  "enter_otp_label": "OTP লিখক",
+  "otp_label": "OTP",
+  "otp_helper": "অনুগ্ৰহ কৰি আপোনাৰ মোবাইল/ইমেইললৈ পঠোৱা ৬ সংখ্যাৰ OTP লিখক",
+  "submit_otp_button": "OTP জমা দিন",
+  "change_id_button": "ID সলনি কৰক"
 }
