@@ -82,7 +82,11 @@ class TravelSaathiApp extends StatelessWidget {
           );
         },
         '/live-map': (context) => const LiveMapScreen(),
-        '/sos': (context) => const SOSScreen(),
+        '/sos': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+          final userId = args?['userId'] ?? '68bc3b13f842c2c656f920bb';
+          return SOSScreen(userId: userId);
+        },
       },
     );
   }

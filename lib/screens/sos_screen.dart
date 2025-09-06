@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../widgets/sos_button.dart'; // ✅ Import your SOS button widget
+import '../widgets/sos_button.dart';
 
 class SOSScreen extends StatelessWidget {
-  const SOSScreen({super.key});
+  final String userId;
+
+  const SOSScreen({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +14,8 @@ class SOSScreen extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.red,
       ),
-      body: const Padding(
-        padding: EdgeInsets.all(20),
-        child: SOSButton(),
+      body: Center(
+        child: SOSButton(userId: userId),
       ),
     );
   }

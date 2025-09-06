@@ -1,122 +1,122 @@
-import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 
 class SOSButton extends StatefulWidget {
-  const SOSButton({super.key});
+  final String userId;
+
+  const SOSButton({Key? key, required this.userId}) : super(key: key);
 
   @override
   State<SOSButton> createState() => _SOSButtonState();
 }
 
 class _SOSButtonState extends State<SOSButton> {
-  int pressCount = 0;
-  Timer? pressTimer;
-  bool sosActive = false;
+  int _tapCount = 0;
+  bool _sending = false;
 
-  Future<Map<String, dynamic>> _getUserAndLocation() async {
-    // get userId from SharedPreferences
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    // String? userId = prefs.getString("userId"); 
-    String? userId = "68bc3b13f842c2c656f920bb";
+  Future<Position> _getCurrentLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) throw Exception("Location services are disabled.");
 
-    // get current GPS
-    Position pos = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception("Location permission denied");
+      }
+    }
 
-    return {
-      "userId": userId,
-      "lat": pos.latitude,
-      "lng": pos.longitude,
-    };
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception("Location permissions are permanently denied.");
+    }
+
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
   }
 
   Future<void> _sendSOS() async {
     try {
-      debugPrint("Sending SOS...");
-      final payload = await _getUserAndLocation();
-      debugPrint("Payload: $payload");
-      final res = await http.post(
-        Uri.parse("http://localhost:5000/api/alert/create"), // backend endpoint
+      setState(() => _sending = true);
+
+      final position = await _getCurrentLocation();
+
+      final response = await http.post(
+        Uri.parse("http://localhost:5000/api/sos"),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode(payload),
+        body: jsonEncode({
+          "userId": widget.userId,
+          "location": {"lat": position.latitude, "lng": position.longitude},
+        }),
       );
 
-      if (res.statusCode == 201) {
-        setState(() {
-          sosActive = true;
-        });
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("🚨 SOS Sent Successfully!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        throw Exception("Failed to send SOS");
       }
     } catch (e) {
-      debugPrint("Error sending SOS: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("⚠️ Error: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _tapCount = 0;
+        _sending = false;
+      });
     }
   }
 
-  void _handleSOSPress() {
-    setState(() => pressCount++);
+  void _handleTap() {
+    if (_sending) return;
 
-    pressTimer?.cancel();
-    pressTimer = Timer(const Duration(seconds: 2), () {
-      if (pressCount >= 3 && !sosActive) {
-        _sendSOS();
-      }
-      setState(() => pressCount = 0);
+    setState(() {
+      _tapCount++;
     });
-  }
 
-  @override
-  void dispose() {
-    pressTimer?.cancel();
-    super.dispose();
+    if (_tapCount == 3) {
+      _sendSOS();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Tap ${3 - _tapCount} more times to trigger SOS 🚨"),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: sosActive
-            ? const Text(
-          "🚨 SOS Active",
-          style: TextStyle(
-            color: Colors.red,
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-          ),
-        )
-            : GestureDetector(
-          onTap: _handleSOSPress,
-          child: Container(
-            width: 180,
-            height: 180,
-            decoration: BoxDecoration(
-              color: Colors.red,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.redAccent.withOpacity(0.6),
-                  blurRadius: 20,
-                  spreadRadius: 5,
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Text(
-                "SOS",
-                style: TextStyle(
-                  fontSize: 40,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
-              ),
-            ),
-          ),
+    return ElevatedButton(
+      onPressed: _handleTap,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.red,
+        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
+        elevation: 5,
+      ),
+      child: _sending
+          ? const SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+      )
+          : const Text(
+        "SOS",
+        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }

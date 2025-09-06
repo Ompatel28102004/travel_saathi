@@ -348,7 +348,11 @@ class _TravelSaathiDashboardState extends State<TravelSaathiDashboard> {
             if (title == 'Live Map') {
               Navigator.pushNamed(context, '/live-map');
             } else if (title == 'SOS') {
-              Navigator.pushNamed(context, '/sos');
+              Navigator.pushNamed(
+                context,
+                '/sos',
+                arguments: {'userId': '68bc3b13f842c2c656f920bb'}, // ✅ Hardcoded for now
+              );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
