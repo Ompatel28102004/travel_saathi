@@ -13,6 +13,8 @@ import {
 
 const AdminSidebar = ({ handleLogout }) => {
   const navigate = useNavigate();
+  const emailId = localStorage.getItem("email");
+  const name = localStorage.getItem("fullName");
   const getLinkClass = ({ isActive }) =>
     `flex items-center p-3 rounded-lg transition-colors text-gray-700 ${
       isActive
@@ -61,8 +63,8 @@ const AdminSidebar = ({ handleLogout }) => {
         <div className="flex items-center space-x-3 mb-3">
           <UserCircle className="w-10 h-10 text-gray-400" />
           <div>
-            <p className="text-sm font-semibold text-gray-800">Admin User</p>
-            <p className="text-xs text-gray-500">admin@example.com</p>
+            <p className="text-sm font-semibold text-gray-800">{name}</p>
+            <p className="text-xs text-gray-500">{emailId}</p>
           </div>
         </div>
         <button

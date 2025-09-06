@@ -38,7 +38,6 @@ const Login = ({
             Monitoring & Incident Response System
           </p>
         </div>
-
         <div className="grid grid-cols-1 gap-6 mt-12">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
@@ -51,7 +50,6 @@ const Login = ({
               </p>
             </div>
           </div>
-
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
               <AlertTriangle className="w-6 h-6" />
@@ -63,7 +61,6 @@ const Login = ({
               </p>
             </div>
           </div>
-
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
               <Users className="w-6 h-6" />
@@ -91,7 +88,6 @@ const Login = ({
           </h2>
           <p className="text-gray-600">Access the control dashboard</p>
         </div>
-
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
@@ -112,7 +108,6 @@ const Login = ({
                 <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
@@ -141,7 +136,6 @@ const Login = ({
                 </button>
               </div>
             </div>
-
             <div className="flex items-center justify-between">
               <label className="flex items-center">
                 <input
@@ -159,7 +153,6 @@ const Login = ({
                 Forgot password?
               </button>
             </div>
-
             <button
               type="submit"
               disabled={loading}
@@ -167,7 +160,6 @@ const Login = ({
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
-
             <div className="text-center pt-4">
               <span className="text-gray-600">Need admin access? </span>
               <button
@@ -212,7 +204,6 @@ const SignupPage = ({
             Create your admin account to manage the system
           </p>
         </div>
-
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
           <form onSubmit={handleSignup} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
@@ -247,7 +238,6 @@ const SignupPage = ({
                 />
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
@@ -263,7 +253,6 @@ const SignupPage = ({
                 required
               />
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -300,7 +289,6 @@ const SignupPage = ({
                 />
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
@@ -329,7 +317,6 @@ const SignupPage = ({
                 </button>
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm Password
@@ -361,7 +348,6 @@ const SignupPage = ({
                 </button>
               </div>
             </div>
-
             <div className="flex items-start">
               <input
                 type="checkbox"
@@ -373,7 +359,6 @@ const SignupPage = ({
                 authorized to access this system as a government official.
               </span>
             </div>
-
             <button
               type="submit"
               disabled={loading}
@@ -381,7 +366,6 @@ const SignupPage = ({
             >
               {loading ? "Creating Account..." : "Create Admin Account"}
             </button>
-
             <div className="text-center pt-4">
               <span className="text-gray-600">Already have an account? </span>
               <button
@@ -396,7 +380,6 @@ const SignupPage = ({
         </div>
       </div>
     </div>
-
     {/* Right Side - Info */}
     <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden">
       <div className="absolute inset-0 bg-black/10"></div>
@@ -413,7 +396,6 @@ const SignupPage = ({
                 </p>
               </div>
             </div>
-
             <div className="flex items-start space-x-4">
               <Globe className="w-6 h-6 text-green-400 mt-1 flex-shrink-0" />
               <div>
@@ -424,7 +406,6 @@ const SignupPage = ({
                 </p>
               </div>
             </div>
-
             <div className="flex items-start space-x-4">
               <MapPin className="w-6 h-6 text-red-400 mt-1 flex-shrink-0" />
               <div>
@@ -436,7 +417,6 @@ const SignupPage = ({
             </div>
           </div>
         </div>
-
         <div className="bg-white/10 rounded-xl p-6">
           <h4 className="font-medium mb-2">Need Help?</h4>
           <p className="text-sm text-gray-300 mb-3">
@@ -479,14 +459,19 @@ const AuthPages = () => {
   const handleLogin = (e) => {
     e.preventDefault();
     setLoading(true);
-
     const loginEndpoint = `${backendUrl}/api/admin/admin-login`;
 
     axios
       .post(loginEndpoint, loginData)
       .then((response) => {
         console.log("Login successful:", response.data);
-        localStorage.setItem("adminToken", response.data.token);
+        const { token, admin } = response.data;
+
+        // Correctly access the nested 'admin' object
+        localStorage.setItem("adminToken", token);
+        localStorage.setItem("email", admin.email);
+        localStorage.setItem("fullName", admin.name);
+
         navigate("/admin");
       })
       .catch((error) => {
@@ -503,14 +488,11 @@ const AuthPages = () => {
 
   const handleSignup = (e) => {
     e.preventDefault();
-
     if (signupData.password !== signupData.confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-
     setLoading(true);
-
     const { confirmPassword, ...signupPayload } = signupData;
     const signupEndpoint = `${backendUrl}/api/admin/admin-register`;
 
