@@ -149,7 +149,7 @@ const AlertsPage = () => {
   const [error, setError] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const backendUrl = "http://localhost:5000";
+  const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const fetchAlerts = async () => {
     try {
