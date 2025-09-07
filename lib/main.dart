@@ -6,6 +6,8 @@ import 'screens/home_screen.dart';
 import 'screens/auth_screen.dart';
 import 'screens/personal_details_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/live_map_screen.dart';
+import 'screens/sos_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -78,6 +80,12 @@ class TravelSaathiApp extends StatelessWidget {
             userID: args['userID'],
             idType: args['idType'],
           );
+        },
+        '/live-map': (context) => const LiveMapScreen(),
+        '/sos': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+          final userId = args?['userId'] ?? '68bc38b0ffa06a704fa9b1ba';
+          return SOSScreen(userId: userId);
         },
       },
     );

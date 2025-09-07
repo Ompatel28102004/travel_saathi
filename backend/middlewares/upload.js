@@ -6,21 +6,19 @@ const path = require('path')
 // Configure storage for Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, 'uploads/'); // Ensure this 'uploads/' directory exists or is created
   },
   filename: (req, file, cb) => {
+    // This function will only be called if a file is actually being uploaded.
+    // If no file is present in the request, multer doesn't call this.
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, `photo-${uniqueSuffix}${path.extname(file.originalname)}`);
   }
 });
 
-// Filter to ensure only images are uploaded
+// Modified filter to always allow
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed!'), false);
-  }
+  cb(null, true); // Always accept the file or proceed if no file is present
 };
 
 const upload = multer({

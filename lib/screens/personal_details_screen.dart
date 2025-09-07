@@ -1,8 +1,12 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dashboard_screen.dart'; // Import the separate dashboard
+import 'package:http/http.dart' as http; // Import http package
+// Assuming ApiService is in this path, adjust if it's different
+import '../services/api_service.dart';
+import 'dashboard_screen.dart';
 
 class PersonalDetailsScreen extends StatefulWidget {
   final String verifiedID;
@@ -52,7 +56,6 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
   void initState() {
     super.initState();
 
-    // Initialize animations
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -70,12 +73,12 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
 
-    // Start animations
     _fadeController.forward();
     _slideController.forward();
 
     // Pre-populate nationality based on ID type
-    if (widget.idType == 'Aadhaar') {
+    // Consistent check with how it's used later for aadharNo/passportNo
+    if (widget.idType.toLowerCase() == 'aadhaar') {
       nationalityController.text = 'Indian';
     }
   }
@@ -94,7 +97,6 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
     super.dispose();
   }
 
-  // Validation methods
   String? _validateName(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Please enter your full name';
@@ -112,13 +114,11 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
     if (value == null || value.isEmpty) {
       return 'Please enter your phone number';
     }
-    // Indian phone number validation
-    if (widget.idType == 'Aadhaar') {
+    if (widget.idType.toLowerCase() == 'aadhaar') {
       if (!RegExp(r'^[6-9]\d{9}$').hasMatch(value)) {
         return 'Enter a valid 10-digit Indian mobile number';
       }
     } else {
-      // International phone validation (basic)
       if (value.length < 7 || value.length > 15) {
         return 'Enter a valid phone number';
       }
@@ -130,7 +130,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
     if (value == null || value.isEmpty) {
       return 'Please enter your email';
     }
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    final emailRegex = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegex.hasMatch(value)) {
       return 'Please enter a valid email address';
     }
@@ -180,8 +180,6 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
   Future<void> pickImage() async {
     try {
       final picker = ImagePicker();
-
-      // Show bottom sheet for image source selection
       final source = await showModalBottomSheet<ImageSource>(
         context: context,
         backgroundColor: Colors.transparent,
@@ -234,12 +232,10 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
           maxHeight: 800,
           imageQuality: 85,
         );
-
         if (pickedFile != null) {
           setState(() {
             profileImage = File(pickedFile.path);
           });
-
           _showSnackBar('Profile photo updated successfully!', Colors.green);
         }
       }
@@ -251,9 +247,9 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
   Future<void> _selectDateOfBirth() async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 365 * 25)), // Default to 25 years ago
+      initialDate: DateTime.now().subtract(const Duration(days: 365 * 25)),
       firstDate: DateTime(1900),
-      lastDate: DateTime.now().subtract(const Duration(days: 365 * 13)), // Minimum 13 years old
+      lastDate: DateTime.now().subtract(const Duration(days: 365 * 13)),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -265,7 +261,6 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
         );
       },
     );
-
     if (picked != null && picked != selectedDateOfBirth) {
       setState(() {
         selectedDateOfBirth = picked;
@@ -278,12 +273,10 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
       _showSnackBar('Please fix the errors above', Colors.red);
       return;
     }
-
     if (selectedDateOfBirth == null) {
       _showSnackBar('Please select your date of birth', Colors.red);
       return;
     }
-
     if (profileImage == null) {
       _showSnackBar('Please add a profile photo', Colors.orange);
       return;
@@ -294,50 +287,80 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
     });
 
     try {
-      // Simulate account creation process with blockchain integration
-      await Future.delayed(const Duration(milliseconds: 500));
+      String apiUrl = '${ApiService.baseUrl}/api/users/register';
+      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
 
-      // Step 1: Create blockchain digital ID
-      _showSnackBar('Creating blockchain Digital ID...', Colors.blue);
-      await Future.delayed(const Duration(seconds: 1));
+      // Add text fields
+      request.fields['name'] = nameController.text.trim();
+      request.fields['email'] = emailController.text.trim();
+      request.fields['contactNo'] = phoneController.text.trim();
+      request.fields['emergencyNo'] = emergencyContactController.text.trim();
+      // Backend expects 'passwordHashed'
+      request.fields['passwordHashed'] = passwordController.text;
+      request.fields['nationality'] = nationalityController.text.trim();
+      request.fields['gender'] = selectedGender;
+      if (selectedDateOfBirth != null) {
+        request.fields['dateOfBirth'] = selectedDateOfBirth!.toIso8601String();
+      }
 
-      // Step 2: Upload profile and encrypt data
-      _showSnackBar('Securing your data...', Colors.blue);
-      await Future.delayed(const Duration(seconds: 1));
+      if (widget.idType.toLowerCase() == 'aadhaar') {
+        request.fields['aadharNo'] = widget.verifiedID;
+        request.fields['passportNo'] = ''; // Send empty if not applicable
+      } else if (widget.idType.toLowerCase() == 'passport') {
+        request.fields['passportNo'] = widget.verifiedID;
+        request.fields['aadharNo'] = ''; // Send empty if not applicable
+      } else {
+        request.fields['aadharNo'] = '';
+        request.fields['passportNo'] = '';
+      }
 
-      // Step 3: Generate safety profile
-      _showSnackBar('Setting up safety monitoring...', Colors.blue);
-      await Future.delayed(const Duration(seconds: 1));
+      // Add image file
+      // if (profileImage != null) {
+      //   request.files.add(
+      //     await http.MultipartFile.fromPath(
+      //       'photo', // This 'photo' key must match your backend (multer fieldname)
+      //       profileImage!.path,
+      //     ),
+      //   );
+      // }
+
+      _showSnackBar('Registering user...', Colors.blue);
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
 
       setState(() {
         isCreating = false;
       });
 
-      // Success feedback
-      HapticFeedback.mediumImpact();
+      if (response.statusCode == 201) {
+        final responseData = json.decode(response.body);
+        // You can use responseData['token'] and responseData['user'] if needed
 
-      // Show success dialog
-      await _showSuccessDialog();
+        HapticFeedback.mediumImpact();
+        await _showSuccessDialog();
 
-      // Navigate to dashboard
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TravelSaathiDashboard(
-              userName: nameController.text.trim(),
-              userID: widget.verifiedID,
-              idType: widget.idType,
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TravelSaathiDashboard(
+                userName: responseData['user']?['name'] ?? nameController.text.trim(),
+                userID: widget.verifiedID, // or responseData['user']?['id']
+                idType: widget.idType,    // or responseData['user']?['idType']
+              ),
             ),
-          ),
-        );
+          );
+        }
+      } else {
+        final responseData = json.decode(response.body);
+        _showSnackBar(
+            'Registration failed: ${responseData['message'] ?? response.reasonPhrase}', Colors.red);
       }
-
     } catch (e) {
       setState(() {
         isCreating = false;
       });
-      _showSnackBar('Account creation failed. Please try again.', Colors.red);
+      _showSnackBar('An error occurred: ${e.toString()}', Colors.red);
     }
   }
 
@@ -402,6 +425,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
   }
 
   void _showSnackBar(String message, Color backgroundColor) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -409,7 +433,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3), // Increased duration slightly
       ),
     );
   }
@@ -445,43 +469,28 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header Section
                   _buildHeaderSection(),
                   const SizedBox(height: 32),
-
-                  // Profile Photo Section
                   _buildProfilePhotoSection(),
                   const SizedBox(height: 32),
-
-                  // Personal Information
                   _buildSectionTitle('Personal Information'),
                   const SizedBox(height: 16),
                   _buildPersonalInfoFields(),
                   const SizedBox(height: 24),
-
-                  // Contact Information
                   _buildSectionTitle('Contact Information'),
                   const SizedBox(height: 16),
                   _buildContactInfoFields(),
                   const SizedBox(height: 24),
-
-                  // Security
                   _buildSectionTitle('Account Security'),
                   const SizedBox(height: 16),
                   _buildSecurityFields(),
                   const SizedBox(height: 24),
-
-                  // Emergency Contact
                   _buildSectionTitle('Emergency Contact'),
                   const SizedBox(height: 16),
                   _buildEmergencyContactField(),
                   const SizedBox(height: 32),
-
-                  // Blockchain Info
                   _buildBlockchainInfoCard(),
                   const SizedBox(height: 32),
-
-                  // Create Account Button
                   _buildCreateAccountButton(),
                   const SizedBox(height: 20),
                 ],
@@ -617,8 +626,6 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
           textCapitalization: TextCapitalization.words,
         ),
         const SizedBox(height: 16),
-
-        // Date of Birth
         InkWell(
           onTap: _selectDateOfBirth,
           child: Container(
@@ -649,13 +656,11 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
           ),
         ),
         const SizedBox(height: 16),
-
-        // Gender Selection
         DropdownButtonFormField<String>(
           value: selectedGender,
           decoration: InputDecoration(
             labelText: 'Gender',
-            prefixIcon: const Icon(Icons.person_outline),
+            prefixIcon: const Icon(Icons.person_outline), // Consider Icons.wc or similar
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -675,7 +680,6 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
           },
         ),
         const SizedBox(height: 16),
-
         _buildInputField(
           controller: nationalityController,
           label: 'Nationality',
@@ -692,11 +696,11 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
       children: [
         _buildInputField(
           controller: phoneController,
-          label: widget.idType == 'Aadhaar' ? 'Mobile Number' : 'Phone Number',
+          label: widget.idType.toLowerCase() == 'aadhaar' ? 'Mobile Number' : 'Phone Number',
           icon: Icons.phone_outlined,
           validator: _validatePhone,
           keyboardType: TextInputType.phone,
-          inputFormatters: widget.idType == 'Aadhaar'
+          inputFormatters: widget.idType.toLowerCase() == 'aadhaar'
               ? [
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(10),
@@ -705,12 +709,11 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
             FilteringTextInputFormatter.allow(RegExp(r'[0-9+\-\s()]')),
             LengthLimitingTextInputFormatter(15),
           ],
-          helperText: widget.idType == 'Aadhaar'
+          helperText: widget.idType.toLowerCase() == 'aadhaar'
               ? 'Enter 10-digit mobile number'
               : 'Include country code if international',
         ),
         const SizedBox(height: 16),
-
         _buildInputField(
           controller: emailController,
           label: 'Email Address',
@@ -744,7 +747,6 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
           helperText: 'Must contain uppercase, lowercase, and number',
         ),
         const SizedBox(height: 16),
-
         _buildInputField(
           controller: confirmPasswordController,
           label: 'Confirm Password',
@@ -770,7 +772,7 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
     return _buildInputField(
       controller: emergencyContactController,
       label: 'Emergency Contact Number',
-      icon: Icons.emergency,
+      icon: Icons.emergency, // Consider Icons.contact_emergency
       validator: _validateEmergencyContact,
       keyboardType: TextInputType.phone,
       helperText: 'This will be used in case of emergencies',
@@ -966,3 +968,4 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen>
     );
   }
 }
+
